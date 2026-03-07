@@ -1,0 +1,20 @@
+services:
+  db:
+    # Usamos la 17 por ser la última estable con soporte extendido
+    image: postgres:17-alpine
+    container_name: klinico_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_HOST: localhost
+    ports:
+      - "5434:5432"
+    volumes:
+      # Mapeo: El volumen nombrado 'postgres_data' se monta en la ruta de datos de Postgres
+      - postgres_data:/var/lib/postgresql/data
+
+# Definición del volumen nombrado para persistencia total
+volumes:
+  postgres_data:
