@@ -91,3 +91,48 @@ CREATE TABLE episodes (
                           modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           modified_by UUID REFERENCES users(user_id)
 );
+
+-- 6. Restricciones a la hora de eliminar
+-- En la tabla de Usuarios
+ALTER TABLE users
+    ADD CONSTRAINT fk_user_service
+        FOREIGN KEY (service_id) REFERENCES services(service_id)
+            ON DELETE SET NULL; -- Si el servicio se borra, el usuario sobrevive
+
+-- En la tabla de Ingresos (Admissions)
+ALTER TABLE admissions
+    ADD CONSTRAINT fk_admission_patient
+        FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+            ON DELETE RESTRICT; -- Prohibido borrar paciente con ingresos
+ALTER TABLE admissions
+    ADD CONSTRAINT fk_admission_service
+        FOREIGN KEY (service_id) REFERENCES services(service_id)
+            ON DELETE RESTRICT; -- Prohibido borrar servicio con ingresos
+
+-- En la tabla de Episodios
+ALTER TABLE episodes
+    ADD CONSTRAINT fk_episode_admission
+        FOREIGN KEY (admission_id) REFERENCES admissions(admission_id)
+            ON DELETE RESTRICT; -- Prohibido borrar ingresos con episodios
+ALTER TABLE episodes
+    ADD CONSTRAINT fk_episode_doctor
+        FOREIGN KEY (doctor_id) REFERENCES users(user_id)
+            ON DELETE RESTRICT; -- Prohibido borrar médicos con episodios
+
+
+    -- TRIGGER
+-- 1. Creamos la función que actualizará la fecha de modificado automáticamente
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.modified_at = CURRENT_TIMESTAMP;
+RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- 2. Aplicamos el trigger a cada tabla que tenga modified_at
+CREATE TRIGGER update_users_modtime BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+CREATE TRIGGER update_services_modtime BEFORE UPDATE ON services FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+CREATE TRIGGER update_patients_modtime BEFORE UPDATE ON patients FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+CREATE TRIGGER update_admissions_modtime BEFORE UPDATE ON admissions FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+CREATE TRIGGER update_episodes_modtime BEFORE UPDATE ON episodes FOR EACH ROW EXECUTE FUNCTION update_modified_column();
