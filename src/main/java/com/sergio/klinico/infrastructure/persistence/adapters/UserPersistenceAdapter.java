@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +26,15 @@ public class UserPersistenceAdapter implements UserRepository {
                         .role(entity.getRole())
                         .name(entity.getName())
                         .surname(entity.getSurname())
+                        .build());
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return jpaUserRepository.findById(id)
+                .map(userEntity -> User.builder()
+                        .id(userEntity.getUserId())
+                        .active(userEntity.isActive())
                         .build());
     }
 }
