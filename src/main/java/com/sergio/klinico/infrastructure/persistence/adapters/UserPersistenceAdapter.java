@@ -34,7 +34,11 @@ public class UserPersistenceAdapter implements UserRepository {
         return jpaUserRepository.findById(id)
                 .map(userEntity -> User.builder()
                         .id(userEntity.getUserId())
+                        .email(userEntity.getEmail())
                         .active(userEntity.isActive())
+                        .role(userEntity.getRole())
+                        .name(userEntity.getName())
+                        .surname(userEntity.getSurname())
                         .build());
     }
 }
