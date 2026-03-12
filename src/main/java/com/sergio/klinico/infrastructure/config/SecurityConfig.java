@@ -4,6 +4,7 @@ import com.sergio.klinico.infrastructure.security.filters.JwtAuthenticationFilte
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -31,7 +33,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Desactivamos CSRF para APIs REST
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll() // Permitimos el login
-                        .anyRequest().authenticated() // El resto de la App (Pacientes, etc) requerirá token
+                        .anyRequest().authenticated() // El resto de la App (Pacientes, Ingresos, etc) requerirá token
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No guardamos sesión en el servidor
