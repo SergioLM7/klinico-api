@@ -6,6 +6,7 @@ import com.sergio.klinico.domain.models.enums.PatientStatus;
 import com.sergio.klinico.infrastructure.persistence.PatientEntity;
 import com.sergio.klinico.infrastructure.rest.dto.requests.PatientRequest;
 import com.sergio.klinico.infrastructure.rest.dto.responses.PatientResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.PatientSummaryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -22,23 +23,27 @@ public interface PatientMapper {
     @Mapping(target = "createdBy", ignore = true)
     Patient toDomainFromDto(PatientRequest request);
 
-    // DE DOMINIO A ENTIDAD (Para el adaptador)
+    // DE DOMINIO A ENTIDAD (Para el adapter)
     PatientEntity toEntity(Patient patient);
 
-    // DE ENTIDAD A DOMINIO (Para recuperar de DB)
+    // DE ENTIDAD A DOMINIO (Para recuperar de BD)
     Patient toDomain(PatientEntity entity);
 
-    // DE DOMINIO A RESPONSE (Para el controlador)
+    // DE DOMINIO A RESPONSE (Para el GET paginated)
     PatientResponse toResponseFromDomain(Patient patient);
 
+    // DE DOMINIO A RESPONSE (Para el create)
+    PatientSummaryResponse toSummaryResponseFromDomain(Patient patient);
+
     /*
-     *  Method to manage the status (string) and transform it to PatientStatus enum value
+     * Transformación del estado (string) a un valor del enum PatientStatus
      */
     default PatientStatus mapStatus(String status) {
-        if (status == null) return null;
+        if (status == null)
+            return null;
         try {
             return PatientStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             throw new BusinessException("Estado de paciente no válido: " + status);
         }
     }

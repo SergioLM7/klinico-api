@@ -1,5 +1,6 @@
 package com.sergio.klinico.infrastructure.persistence.adapters;
 
+import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
 import com.sergio.klinico.domain.repositories.PatientRepository;
 import com.sergio.klinico.infrastructure.mappers.PatientMapper;
@@ -7,9 +8,10 @@ import com.sergio.klinico.infrastructure.persistence.PatientEntity;
 import com.sergio.klinico.infrastructure.persistence.repositories.JpaPatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,10 +41,25 @@ public class PatientPersistenceAdapter implements PatientRepository {
     }
 
     @Override
-    public Page<Patient> findAll(Pageable pageable) {
-        Page<PatientEntity> entities = jpaRepository.findAll(pageable);
+    public PaginatedResult<Patient> findAll(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<PatientEntity> entitiesPage = jpaRepository.findAll(pageRequest);
 
-        return entities.map(patientMapper::toDomain);
+        // Mapeamos las entidades a dominio
+        List<Patient> domainList = entitiesPage.getContent().stream()
+                .map(patientMapper::toDomain)
+                .toList();
+
+        // Devolvemos nuestro envoltorio propio
+        return new PaginatedResult<>(
+                domainList,
+                entitiesPage.getTotalElements(),
+                entitiesPage.getTotalPages(),
+                entitiesPage.getNumber(),
+                entitiesPage.isLast()
+        );
     }
+
+
 
 }

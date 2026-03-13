@@ -1,18 +1,20 @@
 package com.sergio.klinico.application.services;
 
 import com.sergio.klinico.domain.exceptions.BusinessException;
+import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
+import com.sergio.klinico.domain.models.enums.PatientStatus;
 import com.sergio.klinico.domain.repositories.PatientRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class PatientService {
 
@@ -20,6 +22,7 @@ public class PatientService {
 
     public Patient create(Patient patient) {
         if (patientRepository.existsByDni(patient.getDni())) {
+            log.error("El paciente con DNI {} ya existe en BD", patient.getDni());
             throw new BusinessException("Ya existe un paciente registrado con el DNI: " + patient.getDni());
         }
         return patientRepository.save(patient);
@@ -28,14 +31,37 @@ public class PatientService {
     public Patient getById(UUID id) {
         Patient patient = patientRepository.findById(id);
         if (patient == null) {
+            log.error("El paciente con ID {} no existe en BD", id);
             throw new BusinessException("Paciente no encontrado");
         }
         return patient;
     }
 
-    public Page<Patient> getAllPaginated(Pageable pageable) {
-        return patientRepository.findAll(pageable);
+    public PaginatedResult<Patient> getAllPaginated(int page, int size) {
+        return patientRepository.findAll(page, size);
     }
 
-    // El Update y el ChangeStatus irían aquí también
+    public Patient update(Patient updatedData) {
+
+        Patient currentPatient = getById(updatedData.getPatientId());
+        PatientStatus previousStatus = currentPatient.getStatus();
+
+        if (updatedData.getStatus() != currentPatient.getStatus()) {
+            log.info("Paciente con ID {} va a cambiar su estado de {} a {}", updatedData.getPatientId(), currentPatient.getStatus(), updatedData.getStatus());
+            currentPatient.applyStatusChange(updatedData.getStatus());
+        }
+
+        if (updatedData.getName() != null) currentPatient.setName(updatedData.getName());
+        if (updatedData.getSurname() != null) currentPatient.setSurname(updatedData.getSurname());
+        if (updatedData.getAddress() != null) currentPatient.setAddress(updatedData.getAddress());
+        if (updatedData.getContactNumber() != null) currentPatient.setContactNumber(updatedData.getContactNumber());
+        if (updatedData.getRelativeContactNumber() != null) currentPatient.setRelativeContactNumber(updatedData.getRelativeContactNumber());
+
+        Patient updatedPatient = patientRepository.save(currentPatient);
+
+        if(updatedPatient.getStatus() != previousStatus)
+            log.info("Paciente con ID {} ha cambiado su estado de {} a {}", updatedData.getPatientId(), previousStatus, updatedPatient.getStatus());
+
+        return updatedPatient;
+    }
 }

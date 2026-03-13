@@ -1,10 +1,8 @@
 package com.sergio.klinico.domain.models;
 
+import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.domain.models.enums.PatientStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +22,21 @@ public class Patient {
     private String address;
     private String contactNumber;
     private String relativeContactNumber;
+    @Setter(AccessLevel.NONE)
     private PatientStatus status;
     private LocalDateTime createdAt;
     private UUID createdBy;
+    private LocalDateTime lastModifiedAt;
+    private UUID lastModifiedBy;
+
+    public void applyStatusChange(PatientStatus newStatus) {
+        if (newStatus == null) {
+            throw new BusinessException("El estado del paciente no puede ser nulo");
+        } else if(status == PatientStatus.EXITUS) {
+            throw new BusinessException("No se puede cambiar el estado de un paciente que ya está exitus");
+        } else if (status == PatientStatus.ALTA && newStatus == PatientStatus.EXITUS) {
+            throw new BusinessException("No se puede cambiar directamente el estado de un paciente de alta a exitus");
+        }
+        status = newStatus;
+    }
 }

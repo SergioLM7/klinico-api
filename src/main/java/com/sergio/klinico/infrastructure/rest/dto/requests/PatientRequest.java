@@ -1,5 +1,7 @@
 package com.sergio.klinico.infrastructure.rest.dto.requests;
 
+import com.sergio.klinico.infrastructure.rest.dto.validations.CreateGroup;
+import com.sergio.klinico.infrastructure.rest.dto.validations.UpdateGroup;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,35 +16,37 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class PatientRequest {
 
-    @NotBlank(message = "El DNI es obligatorio")
-    @Pattern(regexp = "^\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]$|^[XYZ]\\d{7}[TRWAGMYFPDXBNJZSQVHLCKE]$", message = "Formato de DNI no válido")
+    @NotBlank(groups = CreateGroup.class, message = "El DNI es obligatorio")
+    @Pattern(groups = CreateGroup.class, regexp = "^\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]$|^[XYZ]\\d{7}[TRWAGMYFPDXBNJZSQVHLCKE]$", message = "Formato de DNI no válido")
     private String dni;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 50)
+    @NotBlank(groups = CreateGroup.class, message = "El nombre es obligatorio")
+    @Size(min = 2, max = 50, groups = { CreateGroup.class, UpdateGroup.class })
     private String name;
 
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(min = 2, max = 100)
+    @NotBlank(groups = CreateGroup.class, message = "El apellido es obligatorio")
+    @Size(min = 2, max = 100, groups = { CreateGroup.class, UpdateGroup.class })
     private String surname;
 
-    @NotNull(message = "El sexo es obligatorio")
-    // Validaremos que sea 'M', 'F' u 'O' en la lógica o con un validador custom
-    private Character sex;
+    @NotNull(groups = CreateGroup.class, message = "El sexo es obligatorio")
+    @Pattern(groups = { CreateGroup.class, UpdateGroup.class }, regexp = "[MF]", message = "El sexo debe ser 'M' o 'F'")
+    private String sex;
 
-    @NotNull(message = "La fecha de nacimiento es obligatoria")
+    @NotNull(groups = CreateGroup.class, message = "La fecha de nacimiento es obligatoria")
     @Past(message = "La fecha de nacimiento debe ser una fecha pasada")
     private LocalDate birthdate;
 
     private String address;
 
-    @Pattern(regexp = "^\\d{9,15}$", message = "Número de contacto no válido")
+    @Pattern(regexp = "^\\d{9,15}$", message = "Número de contacto no válido", groups = { CreateGroup.class,
+            UpdateGroup.class })
     private String contactNumber;
 
-    @Pattern(regexp = "^\\d{9,15}$", message = "Número de familiar de contacto no válido")
+    @Pattern(regexp = "^\\d{9,15}$", message = "Número de familiar de contacto no válido", groups = { CreateGroup.class,
+            UpdateGroup.class })
     private String relativeContactNumber;
 
-    @NotBlank(message = "El estado inicial es obligatorio")
+    @NotBlank(groups = CreateGroup.class, message = "El estado inicial es obligatorio")
     private String status;
 
 }
