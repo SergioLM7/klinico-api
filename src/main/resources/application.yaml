@@ -18,3 +18,9 @@ spring:
     import: "optional:file:.env[.properties]"
 server:
   forward-headers-strategy: native
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL=DEBUG:
