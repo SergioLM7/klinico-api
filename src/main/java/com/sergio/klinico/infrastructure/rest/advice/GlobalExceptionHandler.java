@@ -4,6 +4,7 @@ import com.sergio.klinico.domain.exceptions.AuthException;
 import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.infrastructure.rest.dto.responses.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthException.class)
@@ -25,6 +27,8 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
                 .build();
+
+        log.error("Error de autenticación {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
@@ -38,6 +42,9 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
                 .build();
+
+        log.error("Error de lógica de negocio {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -57,6 +64,9 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
                 .build();
+
+        log.error("Error de validación {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -69,6 +79,9 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
                 .build();
+
+        log.error("Error de acceso denegado {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
@@ -80,6 +93,8 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
                 .build();
+
+        log.error("Error no controlado en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
