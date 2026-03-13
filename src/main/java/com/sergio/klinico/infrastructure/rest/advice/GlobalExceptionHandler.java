@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -83,6 +84,21 @@ public class GlobalExceptionHandler {
         log.error("Error de acceso denegado {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    //Captura cuando un registro que se intenta modificar ya ha sido modificado por otro usuario y ha cambiado su estado
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .message("El registro fue actualizado por otro usuario. Por favor, recarga los datos e inténtalo de nuevo.")
+                .status(HttpStatus.CONFLICT.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        log.error("Conflicto de concurrencia: El recurso de tipo {} con ID {} ya había sido modificado",
+                ex.getPersistentClassName(), ex.getIdentifier());
+
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)
