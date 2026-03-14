@@ -5,21 +5,22 @@ import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
 import com.sergio.klinico.domain.models.enums.PatientStatus;
 import com.sergio.klinico.domain.repositories.PatientRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(readOnly = true)
 public class PatientService {
 
     private final PatientRepository patientRepository;
 
+    @Transactional
     public Patient create(Patient patient) {
         if (patientRepository.existsByDni(patient.getDni())) {
             log.error("El paciente con DNI {} ya existe en BD", patient.getDni());
@@ -41,6 +42,7 @@ public class PatientService {
         return patientRepository.findAll(page, size);
     }
 
+    @Transactional
     public Patient update(Patient updatedData) {
 
         Patient currentPatient = getById(updatedData.getPatientId());
@@ -51,7 +53,7 @@ public class PatientService {
             currentPatient.applyStatusChange(updatedData.getStatus());
         }
 
-        updateFields(updatedData, currentPatient);
+        currentPatient.updateFields(updatedData);
 
         Patient updatedPatient = patientRepository.save(currentPatient);
 
@@ -59,13 +61,5 @@ public class PatientService {
             log.info("Paciente con ID {} ha cambiado su estado de {} a {}", updatedData.getPatientId(), previousStatus, updatedPatient.getStatus());
 
         return updatedPatient;
-    }
-
-    private static void updateFields(Patient updatedData, Patient currentPatient) {
-        if (updatedData.getName() != null) currentPatient.setName(updatedData.getName());
-        if (updatedData.getSurname() != null) currentPatient.setSurname(updatedData.getSurname());
-        if (updatedData.getAddress() != null) currentPatient.setAddress(updatedData.getAddress());
-        if (updatedData.getContactNumber() != null) currentPatient.setContactNumber(updatedData.getContactNumber());
-        if (updatedData.getRelativeContactNumber() != null) currentPatient.setRelativeContactNumber(updatedData.getRelativeContactNumber());
     }
 }

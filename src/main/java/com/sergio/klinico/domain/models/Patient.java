@@ -39,4 +39,12 @@ public class Patient {
         }
         status = newStatus;
     }
+
+    public void updateFields(Patient updatedData) {
+        if (updatedData.getName() != null) this.setName(updatedData.getName());
+        if (updatedData.getSurname() != null) this.setSurname(updatedData.getSurname());
+        if (updatedData.getAddress() != null) this.setAddress(updatedData.getAddress());
+        if (updatedData.getContactNumber() != null) this.setContactNumber(updatedData.getContactNumber());
+        if (updatedData.getRelativeContactNumber() != null) this.setRelativeContactNumber(updatedData.getRelativeContactNumber());
+    }
 }
