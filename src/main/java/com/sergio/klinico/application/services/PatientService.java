@@ -51,11 +51,7 @@ public class PatientService {
             currentPatient.applyStatusChange(updatedData.getStatus());
         }
 
-        if (updatedData.getName() != null) currentPatient.setName(updatedData.getName());
-        if (updatedData.getSurname() != null) currentPatient.setSurname(updatedData.getSurname());
-        if (updatedData.getAddress() != null) currentPatient.setAddress(updatedData.getAddress());
-        if (updatedData.getContactNumber() != null) currentPatient.setContactNumber(updatedData.getContactNumber());
-        if (updatedData.getRelativeContactNumber() != null) currentPatient.setRelativeContactNumber(updatedData.getRelativeContactNumber());
+        updateFields(updatedData, currentPatient);
 
         Patient updatedPatient = patientRepository.save(currentPatient);
 
@@ -63,5 +59,13 @@ public class PatientService {
             log.info("Paciente con ID {} ha cambiado su estado de {} a {}", updatedData.getPatientId(), previousStatus, updatedPatient.getStatus());
 
         return updatedPatient;
+    }
+
+    private static void updateFields(Patient updatedData, Patient currentPatient) {
+        if (updatedData.getName() != null) currentPatient.setName(updatedData.getName());
+        if (updatedData.getSurname() != null) currentPatient.setSurname(updatedData.getSurname());
+        if (updatedData.getAddress() != null) currentPatient.setAddress(updatedData.getAddress());
+        if (updatedData.getContactNumber() != null) currentPatient.setContactNumber(updatedData.getContactNumber());
+        if (updatedData.getRelativeContactNumber() != null) currentPatient.setRelativeContactNumber(updatedData.getRelativeContactNumber());
     }
 }
