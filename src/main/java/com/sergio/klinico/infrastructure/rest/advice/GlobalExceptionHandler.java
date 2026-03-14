@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -84,6 +85,23 @@ public class GlobalExceptionHandler {
         log.error("Error de acceso denegado {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    // Captura cuando el request body está vacío o mal formado
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String message = "El cuerpo de la solicitud es requerido y debe estar en formato JSON válido";
+        
+        ErrorResponse error = ErrorResponse.builder()
+                .message(message)
+                .status(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("Error de lectura del cuerpo de la solicitud {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     //Captura cuando un registro que se intenta modificar ya ha sido modificado por otro usuario y ha cambiado su estado
