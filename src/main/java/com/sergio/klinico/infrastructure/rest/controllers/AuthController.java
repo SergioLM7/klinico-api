@@ -7,12 +7,14 @@ import com.sergio.klinico.infrastructure.rest.dto.responses.LoginResponse;
 import com.sergio.klinico.infrastructure.security.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final LoginUseCase loginUseCase;
@@ -20,13 +22,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        // 1. Ejecutamos la lógica de negocio
+        log.info("REQUEST: POST /login para usuario {} recibida", request.getEmail());
+
         User user = loginUseCase.execute(request.getEmail(), request.getPassword());
 
-        // 2. Si es válido, generamos el token
         String token = jwtService.generateToken(user);
 
-        // 3. Construimos la respuesta para Flutter
         LoginResponse response = LoginResponse.builder()
                 .token(token)
                 .userId(user.getId())
@@ -36,6 +37,7 @@ public class AuthController {
                 .serviceId(user.getServiceId())
                 .build();
 
+        log.info("Usuario {} ha iniciado sesión correctamente", user.getId());
         return ResponseEntity.ok(response);
     }
 }

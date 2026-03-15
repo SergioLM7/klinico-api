@@ -26,6 +26,7 @@ public class UserPersistenceAdapter implements UserRepository {
                         .role(entity.getRole())
                         .name(entity.getName())
                         .surname(entity.getSurname())
+                        .serviceId(entity.getServiceId())
                         .build());
     }
 
@@ -39,6 +40,7 @@ public class UserPersistenceAdapter implements UserRepository {
                         .role(userEntity.getRole())
                         .name(userEntity.getName())
                         .surname(userEntity.getSurname())
+                        .serviceId(userEntity.getServiceId())
                         .build());
     }
 }
