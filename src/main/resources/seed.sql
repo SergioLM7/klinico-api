@@ -19,11 +19,50 @@ VALUES (
 
 INSERT INTO users (email, password_hash, name, surname, role)
 VALUES (
-           'administrador@klinico.com',
+           'administrativo@klinico.com',
            '$2a$12$adlgjYmC8GlNk4WqckmYvO.3Die9zg/x3ZyiW4HabDpqf0PUIrFAu',
            'Juan',
-           'Administrador',
+           'López',
            'ADMINISTRATIVO'
+       );
+INSERT INTO users (email, password_hash, name, surname, role, service_id)
+VALUES (
+           'medico1@klinico.com',
+           '$2a$12$oyGKnR0frL4dUbw2SyUeVO3EQrXtMWdHZ3glMUXjnJ3LcKPeg8Sae',
+           'Carlos',
+           'García Ruíz',
+           'MEDICO',
+           'e0783110-21fe-4a06-8713-617883cc7438'
+       );
+
+INSERT INTO users (email, password_hash, name, surname, role, service_id)
+VALUES (
+           'medico2@klinico.com',
+           '$2a$12$adlgjYmC8GlNk4WqckmYvO.3Die9zg/x3ZyiW4HabDpqf0PUIrFAu',
+           'Ana',
+           'Rodríguez López',
+           'MEDICO',
+           '56314568-0da9-4473-9913-d865a3d8451f'
+       );
+
+INSERT INTO users (email, password_hash, name, surname, role, service_id)
+VALUES (
+           'jefeservicio1@klinico.com',
+           '$2a$12$kKGVt/QOYAlja3KVabEB3Oz6UnTTJZ7RzTolSBF4AGzZ0Wv5FDDBq',
+           'Leocadio',
+           'De la Morena Cenjor',
+           'JEFESERVICIO',
+           'e0783110-21fe-4a06-8713-617883cc7438'
+       );
+
+INSERT INTO users (email, password_hash, name, surname, role, service_id)
+VALUES (
+           'jefeservicio2@klinico.com',
+           '$2a$12$U1/jQwu/slOw0LwM9hywue9mJZJaWvVrCIgYAKCLTPHPRZUsWWyxK',
+           'Leocadio',
+           'De la Morena Cenjor',
+           'JEFESERVICIO',
+           '56314568-0da9-4473-9913-d865a3d8451f'
        );
 
 --INSERTS patients
