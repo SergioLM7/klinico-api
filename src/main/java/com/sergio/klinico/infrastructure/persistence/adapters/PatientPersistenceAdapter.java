@@ -25,6 +25,14 @@ public class PatientPersistenceAdapter implements PatientRepository {
     @Override
     public Patient save(Patient patient) {
         PatientEntity entity = patientMapper.toEntity(patient);
+
+        // Si es una actualización (el ID ya existe) le asignamos al versión actual a la entidad que vamos a guardar
+        if (patient.getPatientId() != null) {
+            jpaRepository.findById(patient.getPatientId()).ifPresent(existingEntity ->
+                entity.setVersion(existingEntity.getVersion())
+            );
+        }
+
         PatientEntity savedEntity = jpaRepository.save(entity);
         return patientMapper.toDomain(savedEntity);
     }

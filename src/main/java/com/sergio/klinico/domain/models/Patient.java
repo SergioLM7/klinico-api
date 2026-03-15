@@ -13,6 +13,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Patient {
+    private Long version;
+
     private UUID patientId;
     private String dni;
     private String name;
