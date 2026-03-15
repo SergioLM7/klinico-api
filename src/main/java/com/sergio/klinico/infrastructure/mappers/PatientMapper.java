@@ -5,8 +5,8 @@ import com.sergio.klinico.domain.models.Patient;
 import com.sergio.klinico.domain.models.enums.PatientStatus;
 import com.sergio.klinico.infrastructure.persistence.PatientEntity;
 import com.sergio.klinico.infrastructure.rest.dto.requests.PatientRequest;
-import com.sergio.klinico.infrastructure.rest.dto.responses.PatientResponse;
-import com.sergio.klinico.infrastructure.rest.dto.responses.PatientSummaryResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.patient.PatientResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.patient.PatientSummaryResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
