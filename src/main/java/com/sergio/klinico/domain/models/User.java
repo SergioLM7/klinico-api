@@ -21,6 +21,7 @@ public class User implements UserDetails {
     private String surname;
     private UserRole role;
     private boolean active;
+    private UUID serviceId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

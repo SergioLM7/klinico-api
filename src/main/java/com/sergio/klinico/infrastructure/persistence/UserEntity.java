@@ -61,7 +61,6 @@ public class UserEntity {
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
 
-    // Relaciones (de momento las dejamos como IDs o Lazy para no complicar el Login)
     @Column(name = "service_id")
     private UUID serviceId;
 }

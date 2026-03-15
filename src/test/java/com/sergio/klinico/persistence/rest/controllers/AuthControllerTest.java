@@ -52,6 +52,7 @@ class AuthControllerTest {
         private final String testEmail = "test@example.com";
         private final String testPassword = "password123";
         private final String testToken = "jwt.token.here";
+        private final UUID testServiceId = UUID.randomUUID();
         private final UUID userId = UUID.randomUUID();
 
         @BeforeEach
@@ -69,6 +70,7 @@ class AuthControllerTest {
                                 .surname("García")
                                 .role(UserRole.ADMINISTRATIVO)
                                 .active(true)
+                                .serviceId(testServiceId)
                                 .build();
 
                 testLoginRequest = new LoginRequest();
@@ -81,6 +83,7 @@ class AuthControllerTest {
                                 .email(testEmail)
                                 .name("Juan García")
                                 .role(UserRole.ADMINISTRATIVO.name())
+                                .serviceId(testServiceId)
                                 .build();
         }
 
@@ -99,7 +102,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.email").value(testEmail))
                 .andExpect(jsonPath("$.name").value("Juan García"))
-                .andExpect(jsonPath("$.role").value(UserRole.ADMINISTRATIVO.name()));
+                .andExpect(jsonPath("$.role").value(UserRole.ADMINISTRATIVO.name()))
+                .andExpect(jsonPath("$.serviceId").value(testServiceId.toString()));
 
         verify(loginUseCase).execute(testEmail, testPassword);
         verify(jwtService).generateToken(testUser);
@@ -202,6 +206,7 @@ class AuthControllerTest {
                                 .surname("López")
                                 .role(UserRole.MEDICO)
                                 .active(true)
+                                .serviceId(testServiceId)
                                 .build();
 
                 when(loginUseCase.execute(testEmail, testPassword)).thenReturn(doctorUser);
@@ -211,7 +216,8 @@ class AuthControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(testLoginRequest)))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.role").value(UserRole.MEDICO.name()));
+                                .andExpect(jsonPath("$.role").value(UserRole.MEDICO.name()))
+                                .andExpect(jsonPath("$.serviceId").value(testServiceId.toString()));
 
                 verify(loginUseCase).execute(testEmail, testPassword);
                 verify(jwtService).generateToken(doctorUser);
@@ -227,6 +233,7 @@ class AuthControllerTest {
                                 .surname("García")
                                 .role(UserRole.ADMINISTRATIVO)
                                 .active(true)
+                                .serviceId(testServiceId)
                                 .build();
 
                 when(loginUseCase.execute(testEmail, testPassword)).thenReturn(userWithNullName);
