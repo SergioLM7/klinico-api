@@ -5,12 +5,11 @@ import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
 import com.sergio.klinico.infrastructure.mappers.PatientMapper;
 import com.sergio.klinico.infrastructure.rest.dto.requests.PatientRequest;
-import com.sergio.klinico.infrastructure.rest.dto.responses.PatientPageResponse;
-import com.sergio.klinico.infrastructure.rest.dto.responses.PatientResponse;
-import com.sergio.klinico.infrastructure.rest.dto.responses.PatientSummaryResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.PaginatedResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.patient.PatientResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.patient.PatientSummaryResponse;
 import com.sergio.klinico.infrastructure.rest.dto.validations.CreateGroup;
 import com.sergio.klinico.infrastructure.rest.dto.validations.UpdateGroup;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,7 +33,8 @@ public class PatientController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMINISTRATIVO')")
-    public ResponseEntity<PatientSummaryResponse> create(@Validated(CreateGroup.class) @RequestBody PatientRequest request) {
+    public ResponseEntity<PatientSummaryResponse> create(
+            @Validated(CreateGroup.class) @RequestBody PatientRequest request) {
         log.info("REQUEST: POST /patients/create recibida");
 
         // 1. Mapeamos DTO -> Dominio
@@ -44,7 +44,7 @@ public class PatientController {
 
         PatientSummaryResponse response = patientMapper.toSummaryResponseFromDomain(savedPatient);
 
-        if(response.dni() != null)
+        if (response.dni() != null)
             log.info("Paciente {} creado con éxito por el usuario {}", response.dni(), savedPatient.getCreatedBy());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -52,7 +52,7 @@ public class PatientController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRATIVO')")
-    public ResponseEntity<PatientPageResponse> findAll(
+    public ResponseEntity<PaginatedResponse<PatientResponse>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.info("REQUEST: GET /patients recibida");
@@ -64,13 +64,7 @@ public class PatientController {
                 .map(patientMapper::toResponseFromDomain)
                 .toList();
 
-        PatientPageResponse response = PatientPageResponse.builder()
-                .patients(responseList)
-                .totalElements(result.totalElements())
-                .totalPages(result.totalPages())
-                .currentPage(result.currentPage())
-                .isLast(result.isLast())
-                .build();
+        PaginatedResponse<PatientResponse> response = PaginatedResponse.create(responseList, result);
 
         return ResponseEntity.ok(response);
     }
@@ -101,11 +95,10 @@ public class PatientController {
 
         PatientResponse response = patientMapper.toResponseFromDomain(updatedPatient);
 
-        if(response != null)
+        if (response != null)
             log.info("Paciente con ID {} modificado con éxito por el usuario {}", id, response.getLastModifiedBy());
 
         return ResponseEntity.ok(response);
     }
-
 
 }

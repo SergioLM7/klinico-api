@@ -1,4 +1,4 @@
-package com.sergio.klinico.infrastructure.rest.dto.responses;
+package com.sergio.klinico.infrastructure.rest.dto.responses.patient;
 
 import com.sergio.klinico.domain.models.enums.PatientStatus;
 
