@@ -21,115 +21,120 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(AuthException.class)
-    public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .message(ex.getMessage())
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .timestamp(LocalDateTime.now())
-                .path(request.getRequestURI())
-                .build();
+        @ExceptionHandler(AuthException.class)
+        public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(ex.getMessage())
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
 
-        log.error("Error de autenticación {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                log.warn("Error de autenticación {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
 
-    // Captura errores de lógica (DNI repetido, etc.)
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .message(ex.getMessage())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .timestamp(LocalDateTime.now())
-                .path(request.getRequestURI())
-                .build();
+        // Captura errores de lógica (DNI repetido, etc.)
+        @ExceptionHandler(BusinessException.class)
+        public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(ex.getMessage())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
 
-        log.error("Error de lógica de negocio {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                log.warn("Error de lógica de negocio {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
 
-    // Captura errores de validación de los @NotBlank, @Pattern, @Past...
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        // Concatenamos todos los errores de validación en un solo mensaje
-        String errorMessage = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+        // Captura errores de validación de los @NotBlank, @Pattern, @Past...
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,
+                        HttpServletRequest request) {
+                // Concatenamos todos los errores de validación en un solo mensaje
+                String errorMessage = ex.getBindingResult()
+                                .getFieldErrors()
+                                .stream()
+                                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                                .collect(Collectors.joining(", "));
 
-        ErrorResponse error = ErrorResponse.builder()
-                .message("Error de validación: " + errorMessage)
-                .status(HttpStatus.BAD_REQUEST.value())
-                .timestamp(LocalDateTime.now())
-                .path(request.getRequestURI())
-                .build();
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("Error de validación: " + errorMessage)
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
 
-        log.error("Error de validación {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                log.warn("Error de validación {}: {}", request.getRequestURI(), errorMessage);
 
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
 
-    // Captura cuando el @PreAuthorize falla (Rol incorrecto)
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .message("No tienes permisos suficientes para realizar esta acción")
-                .status(HttpStatus.FORBIDDEN.value())
-                .timestamp(LocalDateTime.now())
-                .path(request.getRequestURI())
-                .build();
+        // Captura cuando el @PreAuthorize falla (Rol incorrecto)
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
+                        HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("No tienes permisos suficientes para realizar esta acción")
+                                .status(HttpStatus.FORBIDDEN.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
 
-        log.error("Error de acceso denegado {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                log.warn("Error de acceso denegado {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
-    }
+                return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+        }
 
-    // Captura cuando el request body está vacío o mal formado
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        String message = "El cuerpo de la solicitud es requerido y debe estar en formato JSON válido";
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .message(message)
-                .status(HttpStatus.BAD_REQUEST.value())
-                .timestamp(LocalDateTime.now())
-                .path(request.getRequestURI())
-                .build();
+        // Captura cuando el request body está vacío o mal formado
+        @ExceptionHandler(HttpMessageNotReadableException.class)
+        public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
+                        HttpServletRequest request) {
+                String message = "El cuerpo de la solicitud es requerido y debe estar en formato JSON válido";
 
-        log.error("Error de lectura del cuerpo de la solicitud {}: {}", request.getRequestURI(), ex.getMessage());
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(message)
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
 
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
+                log.warn("Error de lectura del cuerpo de la solicitud {}: {}", request.getRequestURI(),
+                                ex.getMessage());
 
-    //Captura cuando un registro que se intenta modificar ya ha sido modificado por otro usuario y ha cambiado su estado
-    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-    public ResponseEntity<ErrorResponse> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
-        ErrorResponse error = ErrorResponse.builder()
-                .message("El registro fue actualizado por otro usuario. Por favor, recarga los datos e inténtalo de nuevo.")
-                .status(HttpStatus.CONFLICT.value())
-                .timestamp(LocalDateTime.now())
-                .build();
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
 
-        log.error("Conflicto de concurrencia: El recurso de tipo {} con ID {} ya había sido modificado",
-                ex.getPersistentClassName(), ex.getIdentifier());
+        // Captura cuando un registro que se intenta modificar ya ha sido modificado por
+        // otro usuario y ha cambiado su estado
+        @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+        public ResponseEntity<ErrorResponse> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("El registro fue actualizado por otro usuario. Por favor, recarga los datos e inténtalo de nuevo.")
+                                .status(HttpStatus.CONFLICT.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
 
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
+                log.warn("Conflicto de concurrencia: El recurso de tipo {} con ID {} ya había sido modificado",
+                                ex.getPersistentClassName(), ex.getIdentifier());
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .message(ex.getMessage())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .timestamp(LocalDateTime.now())
-                .path(request.getRequestURI())
-                .build();
+                return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
 
-        log.error("Error no controlado en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(ex.getMessage())
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
 
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+                log.error("Error no controlado en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 }
