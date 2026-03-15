@@ -33,6 +33,7 @@ public class AuthController {
                 .email(user.getEmail())
                 .name(user.getName() + " " + user.getSurname())
                 .role(user.getRole().name())
+                .serviceId(user.getServiceId())
                 .build();
 
         return ResponseEntity.ok(response);
