@@ -49,6 +49,7 @@ CREATE TABLE patients (
                           created_by UUID references users(user_id),
                           modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           modified_by UUID REFERENCES users(user_id),
+                          version BIGINT DEFAULT 0,
                           constraint sex check (SEX in ('M', 'F'))
 );
 
@@ -58,21 +59,27 @@ CREATE TABLE admissions (
                             patient_id UUID NOT NULL REFERENCES patients(patient_id),
                             service_id UUID NOT NULL REFERENCES services(service_id),
                             assigned_doctor_id UUID REFERENCES users(user_id),
-                            admission_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                             discharge_date TIMESTAMP,
-                            hospitalization_length INT,
-                            principal_diagnosis TEXT,
-                            basal_Barthel INT,
-                            chronic_treatment TEXT,
-                            allergies TEXT,
-                            medical_history TEXT,
-                            room_number INT,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            created_by UUID references users(user_id),
-                            modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            modified_by UUID REFERENCES users(user_id),
+                            hospitalization_length INTEGER GENERATED ALWAYS AS (
+                                CASE
+                                WHEN discharge_date IS NOT NULL THEN
+                                EXTRACT(DAY FROM (discharge_date - created_at))::INTEGER
+            ELSE 0
+        END
+) stored,
+    principal_diagnosis TEXT,
+    basal_Barthel INT,
+    chronic_treatment TEXT,
+    allergies TEXT,
+    medical_history TEXT,
+    room_number INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID references users(user_id),
+	modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_by UUID REFERENCES users(user_id),
+    version BIGINT DEFAULT 0,
     -- Restricción P035: Fecha ingreso < Fecha alta
-                            CONSTRAINT check_dates CHECK (discharge_date IS NULL OR discharge_date > admission_date)
+    CONSTRAINT check_dates CHECK (discharge_date IS NULL OR discharge_date > created_at)
 );
 
 -- 5. Crear tabla de Episodios (Pase de planta diario)
@@ -80,7 +87,6 @@ CREATE TABLE episodes (
                           episode_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                           admission_id UUID NOT NULL REFERENCES admissions(admission_id),
                           doctor_id UUID NOT NULL REFERENCES users(user_id),
-                          episode_date DATE NOT NULL DEFAULT CURRENT_DATE,
                           clinical_progress TEXT,
                           diagnosis TEXT,
                           braden_score INT,
@@ -89,7 +95,8 @@ CREATE TABLE episodes (
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           created_by UUID references users(user_id),
                           modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          modified_by UUID REFERENCES users(user_id)
+                          modified_by UUID REFERENCES users(user_id),
+                          version BIGINT DEFAULT 0
 );
 
 -- 6. Restricciones a la hora de eliminar
