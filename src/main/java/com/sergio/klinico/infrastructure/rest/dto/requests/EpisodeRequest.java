@@ -16,10 +16,10 @@ import java.util.UUID;
 @NoArgsConstructor
 public class EpisodeRequest {
 
-    @NotBlank(groups = CreateGroup.class, message = "El admissionID es obligatorio")
+    @NotNull(groups = CreateGroup.class, message = "El admissionID es obligatorio")
     private UUID admissionId;
 
-    @NotBlank(groups = CreateGroup.class, message = "El doctorID es obligatorio")
+    @NotNull(groups = CreateGroup.class, message = "El doctorID es obligatorio")
     private UUID doctorId;
 
     @NotBlank(groups = CreateGroup.class, message = "El progreso clínico es obligatorio")
