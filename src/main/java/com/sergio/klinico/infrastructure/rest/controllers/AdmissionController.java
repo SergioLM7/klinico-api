@@ -1,6 +1,7 @@
 package com.sergio.klinico.infrastructure.rest.controllers;
 
 import com.sergio.klinico.application.services.AdmissionService;
+import com.sergio.klinico.application.services.FindUserByIdUseCase;
 import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.domain.models.Admission;
 import com.sergio.klinico.domain.models.PaginatedResult;
@@ -31,16 +32,25 @@ public class AdmissionController {
 
     private final AdmissionService admissionService;
     private final AdmissionMapper admissionMapper;
+    private final FindUserByIdUseCase findUserByIdUseCase;
 
-    @GetMapping("/doctor/{id}")
-    @PreAuthorize("hasAnyRole('MEDICO')")
+    @GetMapping("/doctor/{assignedDoctorId}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<PaginatedResponse<AdmissionResponse>> getActiveByDoctorId(
-            @PathVariable UUID id,
-            @RequestParam int page
+            @PathVariable UUID assignedDoctorId,
+            @RequestParam int page,
+            @AuthenticationPrincipal User user
     ) {
-        log.info("REQUEST: GET /admissions/doctor/{} recibida", id);
+        log.info("REQUEST: GET /admissions/doctor/{} recibida", assignedDoctorId);
 
-        PaginatedResult<Admission> result = admissionService.getActiveByDoctorId(id, page);
+        User assignedDoctor = findUserByIdUseCase.execute(assignedDoctorId);
+
+        if (!user.getServiceId().equals(assignedDoctor.getServiceId())) {
+            log.warn("El usuario {} intentó acceder a las admisiones de un médico de otro servicio {}", user.getId(), assignedDoctor.getServiceId());
+            throw new BusinessException("No tienes permisos para acceder a las admisiones de un médico de otro servicio");
+        }
+
+        PaginatedResult<Admission> result = admissionService.getActiveByDoctorId(assignedDoctorId, page);
 
         List<AdmissionResponse> responseList = result.content().stream()
                 .map(admissionMapper::toResponseFromDomain)
@@ -48,18 +58,25 @@ public class AdmissionController {
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
 
+        log.info("REQUEST: GET /admissions/doctor/{} exitosa", assignedDoctorId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/service/{id}")
+    @GetMapping("/service/{serviceId}")
     @PreAuthorize("hasAnyRole('JEFESERVICIO')")
     public ResponseEntity<PaginatedResponse<AdmissionResponse>> getActiveByServiceId(
-            @PathVariable UUID id,
-            @RequestParam int page
+            @PathVariable UUID serviceId,
+            @RequestParam int page,
+            @AuthenticationPrincipal User user
     ) {
-        log.info("REQUEST: GET /admissions/service/{} recibida", id);
+        log.info("REQUEST: GET /admissions/service/{} recibida", serviceId);
 
-        PaginatedResult<Admission> result = admissionService.getActiveByServiceId(id, page);
+        if (!user.getServiceId().equals(serviceId)) {
+            log.warn("El usuario {} intentó acceder a las admisiones de otro servicio {}", user.getId(), serviceId);
+            throw new BusinessException("No tienes permisos para acceder a las admisiones de otro servicio");
+        }
+
+        PaginatedResult<Admission> result = admissionService.getActiveByServiceId(serviceId, page);
 
         List<AdmissionResponse> responseList = result.content().stream()
                 .map(admissionMapper::toResponseFromDomain)
@@ -67,10 +84,11 @@ public class AdmissionController {
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
 
+        log.info("REQUEST: GET /admissions/service/{} exitosa", serviceId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping()
+    @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRATIVO')")
     public ResponseEntity<PaginatedResponse<AdmissionResponse>> getAllActive(
             @RequestParam int page
@@ -85,6 +103,7 @@ public class AdmissionController {
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
 
+        log.info("REQUEST: GET / de admisiones activas exitosa");
         return ResponseEntity.ok(response);
     }
 
@@ -158,6 +177,7 @@ public class AdmissionController {
             throw new BusinessException("No tienes permisos para ver las métricas de otro servicio.");
         }
 
+        log.info("REQUEST: /GET /admissions/kpi/efficiency/ exitosa para el servicio {}", serviceId);
         return ResponseEntity.ok(admissionService.getServiceEfficiencyKPI(serviceId));
     }
 
