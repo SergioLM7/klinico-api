@@ -59,7 +59,10 @@ public class AdmissionPersistenceAdapter implements AdmissionRepository {
         Page<AdmissionEntity> entitiesPage = jpaRepository.findByDischargeDateIsNull(pageRequest);
 
         return new PaginatedResult<>(
-                entitiesPage.getContent().stream().map(mapper::toDomain).toList(),
+                entitiesPage.getContent().stream()
+                        .map(mapper::toDomain)
+                        .map(this::setHospitalizationLength)
+                        .toList(),
                 entitiesPage.getTotalElements(),
                 entitiesPage.getTotalPages(),
                 entitiesPage.getNumber(),
@@ -73,7 +76,10 @@ public class AdmissionPersistenceAdapter implements AdmissionRepository {
                 pageRequest);
 
         return new PaginatedResult<>(
-                entitiesPage.getContent().stream().map(mapper::toDomain).toList(),
+                entitiesPage.getContent().stream()
+                        .map(mapper::toDomain)
+                        .map(this::setHospitalizationLength)
+                        .toList(),
                 entitiesPage.getTotalElements(),
                 entitiesPage.getTotalPages(),
                 entitiesPage.getNumber(),
@@ -87,10 +93,19 @@ public class AdmissionPersistenceAdapter implements AdmissionRepository {
                 pageRequest);
 
         return new PaginatedResult<>(
-                entitiesPage.getContent().stream().map(mapper::toDomain).toList(),
+                entitiesPage.getContent().stream()
+                        .map(mapper::toDomain)
+                        .map(this::setHospitalizationLength)
+                        .toList(),
                 entitiesPage.getTotalElements(),
                 entitiesPage.getTotalPages(),
                 entitiesPage.getNumber(),
                 entitiesPage.isLast());
     }
+
+    private Admission setHospitalizationLength(Admission admission) {
+        admission.setHospitalizationLength(admission.getLiveHospitalizationLength());
+        return admission;
+    }
+
 }

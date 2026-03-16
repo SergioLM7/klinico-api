@@ -74,10 +74,6 @@ public class Admission {
             throw new BusinessException("No se puede generar un episodio si el paciente aún no tiene habitación asignada");
         }
 
-        if(!episode.getDoctorId().equals(this.getAssignedDoctorId())) {
-            throw new BusinessException("Solo el médico asignado a la admisión puede generar un episodio nuevo");
-        }
-
         episode.setAdmissionId(this.admissionId);
     }
 
@@ -96,13 +92,15 @@ public class Admission {
         }
     }
 
-    public long getLiveHospitalizationLength() {
-        if (getCreatedAt() == null) return 0L;
+    public int getLiveHospitalizationLength() {
+        if (getCreatedAt() == null) return 0;
 
         if (this.hospitalizationLength != null) {
-            return this.hospitalizationLength.longValue();
+            return this.hospitalizationLength;
         }
 
-        return ChronoUnit.DAYS.between(getCreatedAt(), LocalDateTime.now());
+        long duration = ChronoUnit.DAYS.between(getCreatedAt(), LocalDateTime.now());
+
+        return (int) duration;
     }
 }
