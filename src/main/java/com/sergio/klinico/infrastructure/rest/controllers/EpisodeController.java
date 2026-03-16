@@ -35,7 +35,7 @@ public class EpisodeController {
     private final EpisodeMapper episodeMapper;
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('MEDICO', 'JEFESERVICIO')")
+    @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<EpisodeSummaryResponse> create(
             @Validated(CreateGroup.class)
             @RequestBody EpisodeRequest request) {
@@ -52,7 +52,7 @@ public class EpisodeController {
     }
 
     @GetMapping("/{admissionId}")
-    @PreAuthorize("hasRole('MEDICO', 'JEFESERVICIO')")
+    @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<PaginatedResponse<EpisodeResponse>> getEpisodesByAdmissionId (
             @PathVariable UUID admissionId,
             @RequestParam int page
@@ -67,28 +67,30 @@ public class EpisodeController {
 
         PaginatedResponse<EpisodeResponse> response = PaginatedResponse.create(responseList, episodes);
 
+        log.info("REQUEST: GET /{admissionId} ejecutada con éxito");
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{episodeId}/{episodeDate}")
-    @PreAuthorize("hasRole('MEDICO', 'JEFESERVICIO')")
+    @GetMapping("/{admissionId}/{episodeDate}")
+    @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<List<EpisodeResponse>> getEpisodeByDate(
-            @PathVariable UUID episodeId,
+            @PathVariable UUID admissionId,
             @PathVariable LocalDate episodeDate
     ) {
-        log.info("REQUEST: GET /episodes/{}/{} recibida", episodeId, episodeDate);
+        log.info("REQUEST: GET /episodes/{}/{} recibida", admissionId, episodeDate);
 
-        List<Episode> episodeList = episodeService.getEpisodeByEpisodeDate(episodeId, episodeDate);
+        List<Episode> episodeList = episodeService.getEpisodeByEpisodeDate(admissionId, episodeDate);
 
         List<EpisodeResponse> response = episodeList.stream()
                 .map(episodeMapper::toResponseFromDomain)
                 .toList();
 
+        log.info("REQUEST: GET /episodes/{}/{} ejecutada con éxito", admissionId, episodeDate);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/update/{episodeId}")
-    @PreAuthorize("hasRole('MEDICO', 'JEFESERVICIO')")
+    @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<EpisodeResponse> update(
             @PathVariable UUID episodeId,
             @Validated(UpdateGroup.class)

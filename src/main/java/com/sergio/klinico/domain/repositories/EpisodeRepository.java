@@ -11,5 +11,5 @@ public interface EpisodeRepository {
     Episode save(Episode episode);
     Episode findById(UUID episodeId);
     PaginatedResult<Episode> findAllByAdmission(UUID admissionId, int page, int size);
-    List<Episode> findByEpisodeDate(UUID episodeId, LocalDate episodeDate);
+    List<Episode> findByEpisodeDate(UUID admissionId, LocalDate episodeDate);
 }

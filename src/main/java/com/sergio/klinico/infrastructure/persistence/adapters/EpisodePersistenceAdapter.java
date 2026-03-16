@@ -62,8 +62,9 @@ public class EpisodePersistenceAdapter implements EpisodeRepository {
     }
 
     @Override
-    public List<Episode> findByEpisodeDate(UUID episodeId, LocalDate episodeDate) {
-        return jpaRepository.findAllByCreatedAtDate(episodeId, episodeDate).stream()
+    public List<Episode> findByEpisodeDate(UUID admissionId, LocalDate episodeDate) {
+
+        return jpaRepository.findAllByCreatedAtDate(admissionId, episodeDate).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
