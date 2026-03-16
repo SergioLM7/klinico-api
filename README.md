@@ -2,9 +2,9 @@
 # Klinico 🏥 - API de Sistema de Gestión Clínica Hospitalaria
 
 Klinico es una plataforma integral para la gestión de pacientes, admisiones y episodios clínicos, diseñada bajo estándares de alta disponibilidad y robustez técnica. 
-Este proyecto se centra en la digitalización del flujo de trabajo médico, desde el ingreso del paciente hasta su alta. 
+Este proyecto se centra en la digitalización del flujo de trabajo médico, desde el ingreso del paciente hasta su alta, así como en la automatización de KPIs de interés para jefes de servicio.
 
-El objetivo principal de esta API es proveer a una App multiplataforma de las entidades, operaciones y lógica de negocio necesarias para facilitar el pase de planta diario de los médicos de un hospital. No obstante, se ha desarrollado sobre una Arquitectura Hexagonal para desacoplar el dominio del canal de entrada, de forma que el mismo núcleo funcional pueda ser consumido tanto por la aplicación móvil como por un cliente web o de escritorio que albergue el resto del sistema de gestión.
+El objetivo principal de esta API es proveer las entidades, operaciones y lógica de negocio necesarias para facilitar el pase de planta diario de los médicos de un hospital. No obstante, se ha desarrollado sobre una Arquitectura Hexagonal (Domain Driven Development) para desacoplar el dominio del canal de entrada, de forma que el mismo núcleo funcional pueda ser consumido tanto por una aplicación multiplataforma, como por un cliente web o de escritorio.
 
 
 ## 🚀 Características Principales
