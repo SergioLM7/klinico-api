@@ -42,8 +42,8 @@ public class EpisodeService {
         return episodeRepository.findAllByAdmission(admissionId, page, 5);
     }
 
-    public List<Episode> getEpisodeByEpisodeDate(UUID episodeId, LocalDate episodeDate) {
-        return episodeRepository.findByEpisodeDate(episodeId, episodeDate);
+    public List<Episode> getEpisodeByEpisodeDate(UUID admissionId, LocalDate episodeDate) {
+        return episodeRepository.findByEpisodeDate(admissionId, episodeDate);
     }
 
     @Transactional
