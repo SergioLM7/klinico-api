@@ -39,6 +39,36 @@ El proyecto implementa una **Arquitectura Hexagonal** para garantizar el desacop
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Estructura del proyecto
+```text
+com.sergio.klinico
+├── application
+│   └── services          # Lógica de orquestación y casos de uso
+├── domain
+│   ├── exceptions        # Excepciones de negocio (BusinessException)
+│   ├── models            # Entidades puras de dominio
+│   └── repositories      # Puertos de salida (Interfaces)
+└── infrastructure
+    ├── config            # Configuraciones generales de Spring Security
+    ├── mappers           # Mapeos de MapStruct (Domain <-> Entity <-> DTO)
+    ├── persistence       # Adaptadores de persistencia y JPA
+    │   ├── adapters      # Implementación de los repositorios de dominio (Adapters)
+    │   ├── configuration # Configuración específica de Auditoría (AuditorAware)
+    │   ├── repositories  # Interfaces JpaRepository (Spring Data)
+    │   └── entities      # Entidades JPA (@Entity) y AuditableEntity
+    ├── rest              # Adaptadores de entrada (API REST)
+    │   ├── advice        # GlobalExceptionHandler para gestión de errores
+    │   ├── controllers   # Endpoints de la API
+    │   └── dto           # Objetos de transferencia de datos
+    │       ├── requests  # Payloads de entrada
+    │       ├── responses # Estructura de salida (Admission, Episode, Patient, Login, Error)
+    │       └── validations # Grupos de validación
+    └── security          # Infraestructura de seguridad
+        ├── filters       # Filtro de autenticación JWT
+        └── services      # Gestión, validación y extracciones del Token
+```
+
+
 ## 🛠️ Instalación y Configuración en Local
 - 1. Requisitos Previos
 
