@@ -49,6 +49,13 @@ public class PatientPersistenceAdapter implements PatientRepository {
     }
 
     @Override
+    public List<Patient> findAllByIds(List<UUID> ids) {
+        return jpaRepository.findAllById(ids).stream()
+                .map(patientMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public PaginatedResult<Patient> findAll(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<PatientEntity> entitiesPage = jpaRepository.findAll(pageRequest);

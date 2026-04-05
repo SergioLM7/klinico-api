@@ -4,6 +4,7 @@ import com.sergio.klinico.application.services.AdmissionService;
 import com.sergio.klinico.application.services.FindUserByIdUseCase;
 import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.domain.models.Admission;
+import com.sergio.klinico.domain.models.Patient;
 import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.User;
 import com.sergio.klinico.infrastructure.mappers.AdmissionMapper;
@@ -21,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -51,9 +53,10 @@ public class AdmissionController {
         }
 
         PaginatedResult<Admission> result = admissionService.getActiveByDoctorId(assignedDoctorId, page);
+        Map<UUID, Patient> patients = admissionService.loadPatientMapForAdmissions(result.content());
 
         List<AdmissionResponse> responseList = result.content().stream()
-                .map(admissionMapper::toResponseFromDomain)
+                .map(a -> admissionMapper.toResponseFromDomain(a, patients.get(a.getPatientId())))
                 .toList();
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
@@ -77,9 +80,10 @@ public class AdmissionController {
         }
 
         PaginatedResult<Admission> result = admissionService.getActiveByServiceId(serviceId, page);
+        Map<UUID, Patient> patients = admissionService.loadPatientMapForAdmissions(result.content());
 
         List<AdmissionResponse> responseList = result.content().stream()
-                .map(admissionMapper::toResponseFromDomain)
+                .map(a -> admissionMapper.toResponseFromDomain(a, patients.get(a.getPatientId())))
                 .toList();
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
@@ -96,9 +100,10 @@ public class AdmissionController {
         log.info("REQUEST: GET / recibida");
 
         PaginatedResult<Admission> result = admissionService.getAllActive(page);
+        Map<UUID, Patient> patients = admissionService.loadPatientMapForAdmissions(result.content());
 
         List<AdmissionResponse> responseList = result.content().stream()
-                .map(admissionMapper::toResponseFromDomain)
+                .map(a -> admissionMapper.toResponseFromDomain(a, patients.get(a.getPatientId())))
                 .toList();
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);

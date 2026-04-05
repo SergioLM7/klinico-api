@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-15T14:05:25+0100",
+    date = "2026-03-28T12:03:57+0100",
     comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.2 (Oracle Corporation)"
 )
 @Component
@@ -51,6 +51,7 @@ public class EpisodeMapperImpl extends EpisodeMapper {
         episodeEntity.setCreatedBy( domain.getCreatedBy() );
         episodeEntity.setLastModifiedAt( domain.getLastModifiedAt() );
         episodeEntity.setLastModifiedBy( domain.getLastModifiedBy() );
+        episodeEntity.setVersion( domain.getVersion() );
         episodeEntity.setEpisodeId( domain.getEpisodeId() );
         episodeEntity.setDoctorId( domain.getDoctorId() );
         episodeEntity.setClinicalProgress( domain.getClinicalProgress() );
@@ -73,6 +74,7 @@ public class EpisodeMapperImpl extends EpisodeMapper {
         Episode.EpisodeBuilder episode = Episode.builder();
 
         episode.admissionId( entityAdmissionAdmissionId( entity ) );
+        episode.version( entity.getVersion() );
         episode.episodeId( entity.getEpisodeId() );
         episode.doctorId( entity.getDoctorId() );
         episode.clinicalProgress( entity.getClinicalProgress() );
