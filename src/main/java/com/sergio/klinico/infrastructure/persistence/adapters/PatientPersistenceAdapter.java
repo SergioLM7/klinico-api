@@ -2,6 +2,7 @@ package com.sergio.klinico.infrastructure.persistence.adapters;
 
 import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
+import com.sergio.klinico.domain.models.enums.PatientStatus;
 import com.sergio.klinico.domain.repositories.PatientRepository;
 import com.sergio.klinico.infrastructure.mappers.PatientMapper;
 import com.sergio.klinico.infrastructure.persistence.PatientEntity;
@@ -75,6 +76,25 @@ public class PatientPersistenceAdapter implements PatientRepository {
         );
     }
 
+    @Override
+    public PaginatedResult<Patient> findBySurnameAndStatusAlta(String surname, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<PatientEntity> entitiesPage = jpaRepository.findBySurnameContainingIgnoreCaseAndStatus(
+                surname, PatientStatus.ALTA, pageRequest);
 
+        // Mapeamos las entidades a dominio
+        List<Patient> domainList = entitiesPage.getContent().stream()
+                .map(patientMapper::toDomain)
+                .toList();
+
+        // Devolvemos nuestro envoltorio propio
+        return new PaginatedResult<>(
+                domainList,
+                entitiesPage.getTotalElements(),
+                entitiesPage.getTotalPages(),
+                entitiesPage.getNumber(),
+                entitiesPage.isLast()
+        );
+    }
 
 }

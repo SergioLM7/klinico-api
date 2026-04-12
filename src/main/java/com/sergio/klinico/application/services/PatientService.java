@@ -42,6 +42,10 @@ public class PatientService {
         return patientRepository.findAll(page, size);
     }
 
+    public PaginatedResult<Patient> searchBySurname(String surname, int page, int size) {
+        return patientRepository.findBySurnameAndStatusAlta(surname, page, size);
+    }
+
     @Transactional
     public Patient update(Patient updatedData) {
 

@@ -12,4 +12,5 @@ public interface PatientRepository {
     Patient findById(UUID id);
     List<Patient> findAllByIds(List<UUID> ids);
     PaginatedResult<Patient> findAll(int page, int size);
+    PaginatedResult<Patient> findBySurnameAndStatusAlta(String surname, int page, int size);
 }
