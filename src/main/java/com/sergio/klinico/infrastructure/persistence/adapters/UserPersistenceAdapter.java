@@ -47,7 +47,7 @@ public class UserPersistenceAdapter implements UserRepository {
 
     @Override
     public Optional<User> findByServiceIdAndRoleAndActiveTrue(UUID serviceId, UserRole role) {
-        return jpaUserRepository.findByServiceIdAndRoleAndActiveTrue(serviceId, role)
+        return jpaUserRepository.findByServiceIdAndRoleAndActiveTrue(serviceId, role.name())
                 .map(entity -> User.builder()
                         .id(entity.getUserId())
                         .email(entity.getEmail())
