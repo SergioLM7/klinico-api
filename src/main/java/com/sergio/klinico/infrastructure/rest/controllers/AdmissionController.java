@@ -1,6 +1,7 @@
 package com.sergio.klinico.infrastructure.rest.controllers;
 
 import com.sergio.klinico.application.services.AdmissionService;
+import com.sergio.klinico.application.services.FindJefeServicioByServiceIdUseCase;
 import com.sergio.klinico.application.services.FindUserByIdUseCase;
 import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.domain.models.Admission;
@@ -35,6 +36,7 @@ public class AdmissionController {
     private final AdmissionService admissionService;
     private final AdmissionMapper admissionMapper;
     private final FindUserByIdUseCase findUserByIdUseCase;
+    private final FindJefeServicioByServiceIdUseCase findJefeServicioByServiceIdUseCase;
 
     @GetMapping("/doctor/{assignedDoctorId}")
     @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
@@ -97,7 +99,7 @@ public class AdmissionController {
     public ResponseEntity<PaginatedResponse<AdmissionResponse>> getAllActive(
             @RequestParam int page
     ) {
-        log.info("REQUEST: GET / recibida");
+        log.info("REQUEST: GET /admissions recibida");
 
         PaginatedResult<Admission> result = admissionService.getAllActive(page);
         Map<UUID, Patient> patients = admissionService.loadPatientMapForAdmissions(result.content());
@@ -108,20 +110,21 @@ public class AdmissionController {
 
         PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
 
-        log.info("REQUEST: GET / de admisiones activas exitosa");
+        log.info("REQUEST: GET /admissions para admisiones activas exitosa");
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<AdmissionSummaryResponse> create(
-            @RequestBody @Validated AdmissionRequest request,
-            @AuthenticationPrincipal User user) {
+            @RequestBody @Validated AdmissionRequest request) {
         log.info("REQUEST: /POST /admissions/create recibida");
 
         Admission admission = admissionMapper.toDomainFromRequest(request);
-        admission.setAssignedDoctorId(user.getId());
-        admission.setServiceId(user.getServiceId());
+        
+        User jefeServicio = findJefeServicioByServiceIdUseCase.execute(request.getServiceId());
+        admission.setAssignedDoctorId(jefeServicio.getId());
+        admission.setServiceId(request.getServiceId());
 
         Admission saved = admissionService.create(admission);
 

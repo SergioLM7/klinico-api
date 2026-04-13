@@ -1,6 +1,7 @@
 package com.sergio.klinico.infrastructure.persistence.adapters;
 
 import com.sergio.klinico.domain.models.User;
+import com.sergio.klinico.domain.models.enums.UserRole;
 import com.sergio.klinico.domain.repositories.UserRepository;
 import com.sergio.klinico.infrastructure.persistence.repositories.JpaUserRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,21 @@ public class UserPersistenceAdapter implements UserRepository {
                         .name(userEntity.getName())
                         .surname(userEntity.getSurname())
                         .serviceId(userEntity.getServiceId())
+                        .build());
+    }
+
+    @Override
+    public Optional<User> findByServiceIdAndRoleAndActiveTrue(UUID serviceId, UserRole role) {
+        return jpaUserRepository.findByServiceIdAndRoleAndActiveTrue(serviceId, role)
+                .map(entity -> User.builder()
+                        .id(entity.getUserId())
+                        .email(entity.getEmail())
+                        .password(entity.getPassword())
+                        .active(entity.isActive())
+                        .role(entity.getRole())
+                        .name(entity.getName())
+                        .surname(entity.getSurname())
+                        .serviceId(entity.getServiceId())
                         .build());
     }
 }
