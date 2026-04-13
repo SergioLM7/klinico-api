@@ -59,8 +59,8 @@ INSERT INTO users (email, password_hash, name, surname, role, service_id)
 VALUES (
            'jefeservicio2@klinico.com',
            '$2a$12$U1/jQwu/slOw0LwM9hywue9mJZJaWvVrCIgYAKCLTPHPRZUsWWyxK',
-           'Leocadio',
-           'De la Morena Cenjor',
+           'María Antonia',
+           'López Horcajada',
            'JEFESERVICIO',
            '56314568-0da9-4473-9913-d865a3d8451f'
        );
