@@ -86,6 +86,7 @@ public class PatientController {
 
         PaginatedResponse<PatientResponse> response = PaginatedResponse.create(responseList, result);
 
+        log.info("REQUEST: GET /patients/search exitosa - {} pacientes encontrados", response.getData().size());
         return ResponseEntity.ok(response);
     }
 
