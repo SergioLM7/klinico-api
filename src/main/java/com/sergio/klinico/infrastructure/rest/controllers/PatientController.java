@@ -69,6 +69,27 @@ public class PatientController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMINISTRATIVO', 'MEDICO', 'JEFESERVICIO')")
+    public ResponseEntity<PaginatedResponse<PatientResponse>> searchBySurname(
+            @RequestParam String surname,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("REQUEST: GET /patients/search recibida con apellido: {}", surname);
+
+        PaginatedResult<Patient> result = patientService.searchBySurname(surname, page, size);
+
+        // Mapeamos cada Patient de dominio a PatientResponse
+        List<PatientResponse> responseList = result.content().stream()
+                .map(patientMapper::toResponseFromDomain)
+                .toList();
+
+        PaginatedResponse<PatientResponse> response = PaginatedResponse.create(responseList, result);
+
+        log.info("REQUEST: GET /patients/search exitosa - {} pacientes encontrados", response.getData().size());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRATIVO', 'MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<PatientResponse> findById(@PathVariable UUID id) {

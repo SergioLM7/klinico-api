@@ -13,7 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -135,5 +138,13 @@ public class AdmissionService {
 
     public PaginatedResult<Admission> getAllActive(int page) {
         return admissionRepository.findAllActive(page, 10);
+    }
+
+    public Map<UUID, Patient> loadPatientMapForAdmissions(List<Admission> admissions) {
+        List<UUID> patientIds = admissions.stream()
+                .map(Admission::getPatientId)
+                .toList();
+        return patientRepository.findAllByIds(patientIds).stream()
+                .collect(Collectors.toMap(Patient::getPatientId, p -> p));
     }
 }

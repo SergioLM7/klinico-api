@@ -1,5 +1,6 @@
 package com.sergio.klinico.infrastructure.rest.dto.responses.admission;
 
+import com.sergio.klinico.infrastructure.rest.dto.responses.patient.PatientPreviewResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
 @Builder
 public class AdmissionResponse {
     private UUID admissionId;
-    private UUID patientId;
+    private PatientPreviewResponse patient;
     private UUID serviceId;
     private UUID assignedDoctorId;
 

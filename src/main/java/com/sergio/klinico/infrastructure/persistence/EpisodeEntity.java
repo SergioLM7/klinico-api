@@ -1,6 +1,5 @@
 package com.sergio.klinico.infrastructure.persistence;
 
-import com.sergio.klinico.domain.models.Admission;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
