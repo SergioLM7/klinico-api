@@ -25,4 +25,14 @@ public interface JpaAdmissionRepository extends JpaRepository<AdmissionEntity, U
 
     // Búsqueda paginada para Jefes de Servicio
     Page<AdmissionEntity> findByServiceIdAndDischargeDateIsNull(UUID serviceId, Pageable pageable);
+
+    // Búsqueda por apellido de paciente y serviceId con join a patients
+    @Query(value = "SELECT a.* FROM admissions a JOIN patients p ON a.patient_id = p.patient_id " +
+            "WHERE LOWER(p.surname) LIKE LOWER(CONCAT('%', :surname, '%')) " +
+            "AND a.service_id = :serviceId " +
+            "AND a.discharge_date IS NULL", nativeQuery = true)
+    Page<AdmissionEntity> findByPatientSurnameContainingIgnoreCaseAndServiceIdAndDischargeDateIsNull(
+            @Param("surname") String surname,
+            @Param("serviceId") UUID serviceId,
+            Pageable pageable);
 }

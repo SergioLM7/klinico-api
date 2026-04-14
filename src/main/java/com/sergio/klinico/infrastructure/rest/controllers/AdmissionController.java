@@ -114,6 +114,28 @@ public class AdmissionController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
+    public ResponseEntity<PaginatedResponse<AdmissionResponse>> searchByPatientSurname(
+            @RequestParam String surname,
+            @RequestParam int page,
+            @AuthenticationPrincipal User user
+    ) {
+        log.info("REQUEST: GET /admissions/search recibida con apellido: {}", surname);
+
+        PaginatedResult<Admission> result = admissionService.searchByPatientSurnameAndServiceId(surname, user.getServiceId(), page);
+        Map<UUID, Patient> patients = admissionService.loadPatientMapForAdmissions(result.content());
+
+        List<AdmissionResponse> responseList = result.content().stream()
+                .map(a -> admissionMapper.toResponseFromDomain(a, patients.get(a.getPatientId())))
+                .toList();
+
+        PaginatedResponse<AdmissionResponse> response = PaginatedResponse.create(responseList, result);
+
+        log.info("REQUEST: GET /admissions/search exitosa - {} admisiones encontradas", responseList.size());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<AdmissionSummaryResponse> create(

@@ -103,6 +103,23 @@ public class AdmissionPersistenceAdapter implements AdmissionRepository {
                 entitiesPage.isLast());
     }
 
+    @Override
+    public PaginatedResult<Admission> searchByPatientSurnameAndServiceId(String surname, UUID serviceId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("created_at").descending());
+        Page<AdmissionEntity> entitiesPage = jpaRepository.findByPatientSurnameContainingIgnoreCaseAndServiceIdAndDischargeDateIsNull(
+                surname, serviceId, pageRequest);
+
+        return new PaginatedResult<>(
+                entitiesPage.getContent().stream()
+                        .map(mapper::toDomain)
+                        .map(this::setHospitalizationLength)
+                        .toList(),
+                entitiesPage.getTotalElements(),
+                entitiesPage.getTotalPages(),
+                entitiesPage.getNumber(),
+                entitiesPage.isLast());
+    }
+
     private Admission setHospitalizationLength(Admission admission) {
         admission.setHospitalizationLength(admission.getLiveHospitalizationLength());
         return admission;

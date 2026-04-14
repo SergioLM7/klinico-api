@@ -13,4 +13,5 @@ public interface AdmissionRepository {
     PaginatedResult<Admission> findAllActiveByService(UUID serviceId, int page, int size);
     PaginatedResult<Admission> findAllActiveByDoctor(UUID doctorId, int page, int size);
     PaginatedResult<Admission> findAllActive(int page, int size);
+    PaginatedResult<Admission> searchByPatientSurnameAndServiceId(String surname, UUID serviceId, int page, int size);
 }

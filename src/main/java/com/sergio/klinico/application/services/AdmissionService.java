@@ -140,6 +140,10 @@ public class AdmissionService {
         return admissionRepository.findAllActive(page, 10);
     }
 
+    public PaginatedResult<Admission> searchByPatientSurnameAndServiceId(String surname, UUID serviceId, int page) {
+        return admissionRepository.searchByPatientSurnameAndServiceId(surname, serviceId, page, 10);
+    }
+
     public Map<UUID, Patient> loadPatientMapForAdmissions(List<Admission> admissions) {
         List<UUID> patientIds = admissions.stream()
                 .map(Admission::getPatientId)
