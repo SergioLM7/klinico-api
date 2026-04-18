@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,7 +20,8 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
+@Audited
+@AuditOverride(forClass = AuditableEntity.class)
 public class AdmissionEntity extends AuditableEntity {
 
     @Version
@@ -63,5 +66,6 @@ public class AdmissionEntity extends AuditableEntity {
     private Integer basalBarthel;
 
     @OneToMany(mappedBy = "admission", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @NotAudited
     private List<EpisodeEntity> episodes = new ArrayList<>();
 }
