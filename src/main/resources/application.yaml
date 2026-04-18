@@ -6,14 +6,22 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    jpa:
+  jpa:
+    hibernate:
+      ddl-auto: validate # Validar tablas de negocio existentes
+    show-sql: true
+    properties:
       hibernate:
-        ddl-auto: validate # 'validate' porque ya creamos las tablas con el script SQL
-      show-sql: true
-      properties:
-        hibernate:
-          format_sql: true
-          dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Configuración de Hibernate Envers
+        envers:
+          audit_table_suffix: _aud
+          revision_field_name: rev
+          revision_type_field_name: revtype
+          store_data_at_delete: true
+          default_catalog: public
+          default_schema: public
   config:
     import: "optional:file:.env[.properties]"
 server:

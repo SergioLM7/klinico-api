@@ -26,6 +26,7 @@ public abstract class EpisodeMapper {
     @Mapping(target = "episodeId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdByName", ignore = true)
     public abstract Episode toDomainFromDto(EpisodeRequest request);
 
     // DE DOMINIO A ENTIDAD (Para el adapter)
