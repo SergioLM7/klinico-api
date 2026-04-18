@@ -30,6 +30,7 @@ public class Episode {
 
     private LocalDateTime createdAt;
     private UUID createdBy;
+    private String createdByName;
     private LocalDateTime lastModifiedAt;
     private UUID lastModifiedBy;
 

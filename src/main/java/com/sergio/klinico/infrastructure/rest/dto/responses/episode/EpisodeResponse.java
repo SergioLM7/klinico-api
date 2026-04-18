@@ -21,6 +21,7 @@ public class EpisodeResponse {
 
     private LocalDateTime createdAt;
     private String createdBy;
+    private String createdByName;
     private LocalDateTime lastModifiedAt;
     private String lastModifiedBy;
 }

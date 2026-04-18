@@ -6,6 +6,7 @@ import com.sergio.klinico.domain.repositories.EpisodeRepository;
 import com.sergio.klinico.infrastructure.mappers.EpisodeMapper;
 import com.sergio.klinico.infrastructure.persistence.EpisodeEntity;
 import com.sergio.klinico.infrastructure.persistence.repositories.JpaEpisodeRepository;
+import com.sergio.klinico.infrastructure.persistence.repositories.JpaUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class EpisodePersistenceAdapter implements EpisodeRepository {
 
     private final JpaEpisodeRepository jpaRepository;
+    private final JpaUserRepository jpaUserRepository;
     private final EpisodeMapper mapper;
 
     @Override
@@ -43,7 +45,7 @@ public class EpisodePersistenceAdapter implements EpisodeRepository {
 
         Page<EpisodeEntity> entitiesPage = jpaRepository.findByAdmission_AdmissionId(admissionId, pageRequest);
 
-        List<Episode> domainList = entitiesPage.stream().map(mapper::toDomain).toList();
+        List<Episode> domainList = entitiesPage.stream().map(this::toDomainWithCreatorName).toList();
 
         return new PaginatedResult<>(
                 domainList,
@@ -57,15 +59,24 @@ public class EpisodePersistenceAdapter implements EpisodeRepository {
     @Override
     public Episode findById(UUID id) {
         return jpaRepository.findById(id)
-                .map(mapper::toDomain)
+                .map(this::toDomainWithCreatorName)
                 .orElse(null);
     }
 
     @Override
     public List<Episode> findByEpisodeDate(UUID admissionId, LocalDate episodeDate) {
-
         return jpaRepository.findAllByCreatedAtDate(admissionId, episodeDate).stream()
-                .map(mapper::toDomain)
+                .map(this::toDomainWithCreatorName)
                 .toList();
+    }
+
+    private Episode toDomainWithCreatorName(EpisodeEntity entity) {
+        Episode domain = mapper.toDomain(entity);
+        if (entity.getCreatedBy() != null) {
+            jpaUserRepository.findById(entity.getCreatedBy()).ifPresent(user ->
+                    domain.setCreatedByName("Dr. " + user.getName() + " " + user.getSurname())
+            );
+        }
+        return domain;
     }
 }
