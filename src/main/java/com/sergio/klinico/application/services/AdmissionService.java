@@ -4,9 +4,11 @@ import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.domain.models.Admission;
 import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
+import com.sergio.klinico.domain.models.User;
 import com.sergio.klinico.domain.models.enums.PatientStatus;
 import com.sergio.klinico.domain.repositories.AdmissionRepository;
 import com.sergio.klinico.domain.repositories.PatientRepository;
+import com.sergio.klinico.domain.repositories.UserRepository;
 import com.sergio.klinico.infrastructure.rest.dto.responses.admission.AdmissionResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ public class AdmissionService {
 
     private final AdmissionRepository admissionRepository;
     private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public Admission create(Admission admission) {
@@ -70,6 +73,30 @@ public class AdmissionService {
         currentAdmission.assignRoom(roomNumber);
 
         log.info("Habitación {} asignada con éxito a la admisión {}", roomNumber, admissionId);
+        return admissionRepository.save(currentAdmission);
+    }
+
+    @Transactional
+    public Admission reassignDoctor(UUID admissionId, UUID newDoctorId) {
+        Admission currentAdmission = admissionRepository.findById(admissionId);
+
+        if (currentAdmission == null) {
+            log.error("La admisión {}, a la que está intentando reasignar el médico, no existe", admissionId);
+            throw new BusinessException("La admisión a la que está intentando reasignar el médico no existe");
+        }
+
+        User newDoctor = userRepository.findById(newDoctorId)
+                .filter(User::isActive)
+                .orElseThrow(() -> new BusinessException("El médico seleccionado no existe o no está activo"));
+
+        if (!newDoctor.getServiceId().equals(currentAdmission.getServiceId())) {
+            log.warn("El médico {} no pertenece al servicio de la admisión {}", newDoctorId, admissionId);
+            throw new BusinessException("El médico seleccionado no pertenece al mismo servicio que la admisión");
+        }
+
+        currentAdmission.reassignDoctor(newDoctorId);
+
+        log.info("Médico {} reasignado con éxito a la admisión {}", newDoctorId, admissionId);
         return admissionRepository.save(currentAdmission);
     }
 

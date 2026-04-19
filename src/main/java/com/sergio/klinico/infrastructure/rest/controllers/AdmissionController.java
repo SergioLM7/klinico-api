@@ -167,6 +167,19 @@ public class AdmissionController {
         return ResponseEntity.ok(admissionMapper.toResponseFromDomain(updated));
     }
 
+    @PatchMapping("/assign-doctor/{admissionId}")
+    @PreAuthorize("hasAnyRole('JEFESERVICIO')")
+    public ResponseEntity<AdmissionResponse> assignDoctor(
+            @PathVariable UUID admissionId,
+            @RequestParam UUID doctorId) {
+        log.info("REQUEST: /PATCH /admissions/{}/assign-doctor recibida", admissionId);
+
+        Admission updated = admissionService.reassignDoctor(admissionId, doctorId);
+
+        log.info("Médico reasignado con éxito en la admisión {}", updated.getAdmissionId());
+        return ResponseEntity.ok(admissionMapper.toResponseFromDomain(updated));
+    }
+
     @PutMapping("/clinical-update/{admissionId}")
     @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<AdmissionResponse> updateClinicalInfo(

@@ -77,6 +77,13 @@ public class Admission {
         episode.setAdmissionId(this.admissionId);
     }
 
+    public void reassignDoctor(UUID newDoctorId) {
+        if (this.isDischarged()) {
+            throw new BusinessException("No se puede reasignar el médico de una admisión ya dada de alta.");
+        }
+        this.assignedDoctorId = newDoctorId;
+    }
+
     public void updateClinicalInformation(Admission updates) {
         if (this.isDischarged()) {
             throw new BusinessException("No se puede modificar la información clínica de una admisión ya dada de alta");
