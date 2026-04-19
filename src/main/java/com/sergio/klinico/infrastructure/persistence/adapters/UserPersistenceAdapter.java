@@ -1,10 +1,15 @@
 package com.sergio.klinico.infrastructure.persistence.adapters;
 
+import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.User;
 import com.sergio.klinico.domain.models.enums.UserRole;
 import com.sergio.klinico.domain.repositories.UserRepository;
+import com.sergio.klinico.infrastructure.persistence.UserEntity;
 import com.sergio.klinico.infrastructure.persistence.repositories.JpaUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -58,5 +63,29 @@ public class UserPersistenceAdapter implements UserRepository {
                         .surname(entity.getSurname())
                         .serviceId(entity.getServiceId())
                         .build());
+    }
+
+    @Override
+    public PaginatedResult<User> searchBySurnameAndServiceId(String surname, UUID serviceId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("surname").ascending());
+        Page<UserEntity> entitiesPage = jpaUserRepository.findBySurnameContainingIgnoreCaseAndServiceIdAndActiveTrue(
+                surname, serviceId, pageRequest);
+
+        return new PaginatedResult<>(
+                entitiesPage.getContent().stream()
+                        .map(entity -> User.builder()
+                                .id(entity.getUserId())
+                                .email(entity.getEmail())
+                                .active(entity.isActive())
+                                .role(entity.getRole())
+                                .name(entity.getName())
+                                .surname(entity.getSurname())
+                                .serviceId(entity.getServiceId())
+                                .build())
+                        .toList(),
+                entitiesPage.getTotalElements(),
+                entitiesPage.getTotalPages(),
+                entitiesPage.getNumber(),
+                entitiesPage.isLast());
     }
 }

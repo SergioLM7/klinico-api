@@ -1,6 +1,8 @@
 package com.sergio.klinico.infrastructure.persistence.repositories;
 
 import com.sergio.klinico.infrastructure.persistence.UserEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +17,12 @@ public interface JpaUserRepository extends JpaRepository<UserEntity, UUID> {
 
     @Query(value = "SELECT * FROM users WHERE service_id = :serviceId AND role = CAST(:role AS user_role) AND is_active = true", nativeQuery = true)
     Optional<UserEntity> findByServiceIdAndRoleAndActiveTrue(@Param("serviceId") UUID serviceId, @Param("role") String role);
+
+    @Query(value = "SELECT * FROM users WHERE LOWER(surname) LIKE LOWER(CONCAT('%', :surname, '%')) AND service_id = :serviceId AND is_active = true",
+            countQuery = "SELECT COUNT(*) FROM users WHERE LOWER(surname) LIKE LOWER(CONCAT('%', :surname, '%')) AND service_id = :serviceId AND is_active = true",
+            nativeQuery = true)
+    Page<UserEntity> findBySurnameContainingIgnoreCaseAndServiceIdAndActiveTrue(
+            @Param("surname") String surname,
+            @Param("serviceId") UUID serviceId,
+            Pageable pageable);
 }
