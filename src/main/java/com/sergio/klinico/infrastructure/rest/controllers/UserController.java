@@ -3,8 +3,10 @@ package com.sergio.klinico.infrastructure.rest.controllers;
 import com.sergio.klinico.application.services.UserService;
 import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.User;
+import com.sergio.klinico.domain.models.UserWorkLoad;
 import com.sergio.klinico.infrastructure.rest.dto.responses.PaginatedResponse;
 import com.sergio.klinico.infrastructure.rest.dto.responses.user.UserResponse;
+import com.sergio.klinico.infrastructure.rest.dto.responses.user.UserServiceWorkloadResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,27 @@ public class UserController {
         PaginatedResponse<UserResponse> response = PaginatedResponse.create(responseList, result);
 
         log.info("REQUEST: GET /users/search exitosa - {} usuarios encontrados", responseList.size());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/service-workload")
+    @PreAuthorize("hasAnyRole('JEFESERVICIO')")
+    public ResponseEntity<PaginatedResponse<UserServiceWorkloadResponse>> getServiceWorkload(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user
+    ) {
+        log.info("REQUEST: GET /users/service-workload recibida para el servicio: {}", user.getServiceId());
+
+        PaginatedResult<UserWorkLoad> result = userService.serviceWorkload(user.getServiceId(), page, size);
+
+        List<UserServiceWorkloadResponse> responseList = result.content().stream()
+                .map(u -> new UserServiceWorkloadResponse(u.getName(), u.getSurname(), u.getAdmissionsAssigned()))
+                .toList();
+
+        PaginatedResponse<UserServiceWorkloadResponse> response = PaginatedResponse.create(responseList, result);
+
+        log.info("REQUEST: GET /users/service-workload exitosa - {} usuarios encontrados", responseList.size());
         return ResponseEntity.ok(response);
     }
 }

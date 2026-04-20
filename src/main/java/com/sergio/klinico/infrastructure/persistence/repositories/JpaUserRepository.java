@@ -1,6 +1,7 @@
 package com.sergio.klinico.infrastructure.persistence.repositories;
 
 import com.sergio.klinico.infrastructure.persistence.UserEntity;
+import com.sergio.klinico.infrastructure.persistence.repositories.projections.UserWorkloadProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +26,19 @@ public interface JpaUserRepository extends JpaRepository<UserEntity, UUID> {
             @Param("surname") String surname,
             @Param("serviceId") UUID serviceId,
             Pageable pageable);
+
+    @Query(value = "SELECT u.name AS name, u.surname AS surname, COUNT(a.admission_id) AS admissionsAssigned " +
+            "FROM users u " +
+            "LEFT JOIN admissions a ON a.assigned_doctor_id = u.user_id AND a.discharge_date IS NULL " +
+            "WHERE u.service_id = :serviceId " +
+            "AND u.role = CAST('MEDICO' AS user_role) " +
+            "AND u.is_active = true " +
+            "GROUP BY u.user_id, u.name, u.surname " +
+            "ORDER BY admissionsAssigned DESC, u.surname ASC",
+            countQuery = "SELECT COUNT(*) FROM users u " +
+                    "WHERE u.service_id = :serviceId " +
+                    "AND u.role = CAST('MEDICO' AS user_role) " +
+                    "AND u.is_active = true",
+            nativeQuery = true)
+    Page<UserWorkloadProjection> calculateUserWorkload(@Param("serviceId") UUID serviceId, Pageable pageable);
 }
