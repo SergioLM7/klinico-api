@@ -146,15 +146,6 @@ public class AdmissionService {
         return admissionRepository.findById(id);
     }
 
-    public Double getServiceEfficiencyKPI(UUID serviceId) {
-        log.info("Calculando estancia media para el servicio: {}", serviceId);
-
-        Double average = admissionRepository.getAverageHospitalizationLengthByService(serviceId);
-
-        log.info("Estancia media para el servicio calculada: {}", average);
-        return average != null ? average : 0.0;
-    }
-
     public PaginatedResult<Admission> getActiveByDoctorId(UUID doctorId, int page) {
         return admissionRepository.findAllActiveByDoctor(doctorId, page, 10);
     }

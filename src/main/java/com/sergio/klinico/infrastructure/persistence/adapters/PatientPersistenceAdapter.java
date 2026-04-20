@@ -1,5 +1,6 @@
 package com.sergio.klinico.infrastructure.persistence.adapters;
 
+import com.sergio.klinico.domain.models.MonthlyKpiEntry;
 import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
 import com.sergio.klinico.domain.models.enums.PatientStatus;
@@ -95,6 +96,20 @@ public class PatientPersistenceAdapter implements PatientRepository {
                 entitiesPage.getNumber(),
                 entitiesPage.isLast()
         );
+    }
+
+    @Override
+    public List<MonthlyKpiEntry> countExitusByServiceAndYear(UUID serviceId, int year) {
+        return jpaRepository.countExitusByServiceAndYear(serviceId, year).stream()
+                .map(p -> new MonthlyKpiEntry(p.getMonth(), p.getCount().doubleValue()))
+                .toList();
+    }
+
+    @Override
+    public List<MonthlyKpiEntry> countExitusByServiceAndYearAndMonth(UUID serviceId, int year, int month) {
+        return jpaRepository.countExitusByServiceAndYearAndMonth(serviceId, year, month).stream()
+                .map(p -> new MonthlyKpiEntry(p.getMonth(), p.getCount().doubleValue()))
+                .toList();
     }
 
 }

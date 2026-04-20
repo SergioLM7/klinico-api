@@ -1,5 +1,6 @@
 package com.sergio.klinico.domain.repositories;
 
+import com.sergio.klinico.domain.models.MonthlyKpiEntry;
 import com.sergio.klinico.domain.models.PaginatedResult;
 import com.sergio.klinico.domain.models.Patient;
 
@@ -13,4 +14,8 @@ public interface PatientRepository {
     List<Patient> findAllByIds(List<UUID> ids);
     PaginatedResult<Patient> findAll(int page, int size);
     PaginatedResult<Patient> findBySurnameAndStatusAlta(String surname, int page, int size);
+
+    // KPI: Éxitus por servicio
+    List<MonthlyKpiEntry> countExitusByServiceAndYear(UUID serviceId, int year);
+    List<MonthlyKpiEntry> countExitusByServiceAndYearAndMonth(UUID serviceId, int year, int month);
 }

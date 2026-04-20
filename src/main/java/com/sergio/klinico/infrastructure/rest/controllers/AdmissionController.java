@@ -206,22 +206,4 @@ public class AdmissionController {
         log.info("Admission con ID {} dada de alta con éxito por el usuario {}", discharged.getAdmissionId(), discharged.getLastModifiedBy());
         return ResponseEntity.ok(admissionMapper.toResponseFromDomain(discharged));
     }
-
-    @GetMapping("/kpi/efficiency/{serviceId}")
-    @PreAuthorize("hasAnyRole('JEFESERVICIO')")
-    public ResponseEntity<Double> getEfficiency(
-            @PathVariable UUID serviceId,
-            @AuthenticationPrincipal User user
-    ) {
-        log.info("REQUEST: /GET /admissions/kpi/efficiency/{} recibida", serviceId);
-
-        if (!user.getServiceId().equals(serviceId)) {
-            log.warn("El usuario {} intentó acceder a KPIs del servicio {}", user.getId(), serviceId);
-            throw new BusinessException("No tienes permisos para ver las métricas de otro servicio.");
-        }
-
-        log.info("REQUEST: /GET /admissions/kpi/efficiency/ exitosa para el servicio {}", serviceId);
-        return ResponseEntity.ok(admissionService.getServiceEfficiencyKPI(serviceId));
-    }
-
 }
