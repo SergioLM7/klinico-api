@@ -196,7 +196,7 @@ public class AdmissionController {
         return ResponseEntity.ok(admissionMapper.toResponseFromDomain(updated));
     }
 
-    @PostMapping("/discharge/{admissionId}")
+    @PatchMapping("/discharge/{admissionId}")
     @PreAuthorize("hasAnyRole('MEDICO', 'JEFESERVICIO')")
     public ResponseEntity<AdmissionResponse> discharge(@PathVariable UUID admissionId) {
         log.info("REQUEST: /POST /admissions/{}/discharge recibida", admissionId);

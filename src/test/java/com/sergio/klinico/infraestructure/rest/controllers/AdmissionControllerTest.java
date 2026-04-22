@@ -399,7 +399,7 @@ class AdmissionControllerTest {
         when(admissionService.dischargeAdmission(admissionId)).thenReturn(testAdmission);
         when(admissionMapper.toResponseFromDomain(any(Admission.class))).thenReturn(testAdmissionResponse);
 
-        mockMvc.perform(post("/api/v1/admissions/discharge/{id}", admissionId))
+        mockMvc.perform(patch("/api/v1/admissions/discharge/{id}", admissionId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.admissionId").value(admissionId.toString()));
 
@@ -412,7 +412,7 @@ class AdmissionControllerTest {
         when(admissionService.dischargeAdmission(admissionId))
                 .thenThrow(new BusinessException("La admisión a la que está intentando dar de alta no existe"));
 
-        mockMvc.perform(post("/api/v1/admissions/discharge/{id}", admissionId))
+        mockMvc.perform(patch("/api/v1/admissions/discharge/{id}", admissionId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
                         "La admisión a la que está intentando dar de alta no existe"));
