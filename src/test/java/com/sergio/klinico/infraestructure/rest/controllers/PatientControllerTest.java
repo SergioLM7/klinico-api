@@ -1,4 +1,4 @@
-package com.sergio.klinico.persistence.rest.controllers;
+package com.sergio.klinico.infraestructure.rest.controllers;
 
 import com.sergio.klinico.application.services.PatientService;
 import com.sergio.klinico.domain.exceptions.BusinessException;
