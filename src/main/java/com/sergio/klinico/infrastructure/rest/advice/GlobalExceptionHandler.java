@@ -5,6 +5,7 @@ import com.sergio.klinico.domain.exceptions.BusinessException;
 import com.sergio.klinico.infrastructure.rest.dto.responses.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -122,6 +123,20 @@ public class GlobalExceptionHandler {
                                 ex.getPersistentClassName(), ex.getIdentifier());
 
                 return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
+
+        @ExceptionHandler(DataAccessException.class)
+        public ResponseEntity<ErrorResponse> handleDataAccessException(DataAccessException ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("El servicio no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde.")
+                                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.error("Error de acceso a la base de datos en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
         }
 
         @ExceptionHandler(Exception.class)

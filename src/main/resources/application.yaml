@@ -6,9 +6,12 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      initialization-fail-timeout: -1 # No fallar al arrancar si la BBDD no está disponible
+      connection-timeout: 10000 # Fallar rápido (10s) para responder antes de que el cliente agote su timeout
   jpa:
     hibernate:
-      ddl-auto: validate # Validar tablas de negocio existentes
+      ddl-auto: none # La validación requiere conexión activa; en producción usar Flyway/Liquibase
     show-sql: true
     properties:
       hibernate:
