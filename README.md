@@ -82,7 +82,7 @@ gradle bootRun
 ## 👨🏽‍💻 Contacto
 
 **Sergio Lillo, Full Stack Software Developer**
-<a href="https://www.linkedin.com/in/lillosergio/" target="_blank"> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/LinkedIn_icon.svg/1200px-LinkedIn_icon.svg.png" width=30px, height=30px/></a> - sergiolillom@gmail.com
+<a href="https://www.linkedin.com/in/lillosergio/" target="_blank"><img src="https://github.com/devicons/devicon/blob/master/icons/linkedin/linkedin-original.svg" title="LinkedIn" alt="LinkedIn" width="30" height="30"/></a> - sergiolillom@gmail.com
 
 ## © MIT License
 
