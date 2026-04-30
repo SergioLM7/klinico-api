@@ -7,6 +7,7 @@
   ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-6DB33F?logo=springboot)
   ![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk)
   ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-336791?logo=postgresql)
+  ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
   ![License](https://img.shields.io/badge/License-MIT-green)
 </div>
 
@@ -166,6 +167,7 @@ src/
 | Mapeo de objetos | MapStruct `1.6.3` |
 | Utilidades | Lombok |
 | Validación | Spring Validation (Bean Validation) |
+| Contenedores | Docker + Docker Compose |
 | Testing | Spring Boot Test (JUnit 6) |
 | Documentación API | springdoc-openapi `3.0.3` (Swagger UI + OpenAPI 3) |
 
@@ -178,7 +180,7 @@ src/
 ### Prerrequisitos
 
 - [JDK 25](https://jdk.java.net/25/) o superior.
-- [Docker](https://www.docker.com/) y Docker Compose (para levantar PostgreSQL con un solo comando).
+- [Docker](https://www.docker.com/) y Docker Compose (para levantar PostgreSQL o PostgreSQL + API con un solo comando).
 - Gradle no es necesario instalarlo globalmente; el proyecto incluye el **Gradle Wrapper** (`./gradlew`).
 
 ### Variables de entorno
@@ -193,7 +195,8 @@ Crea un archivo `.env` en la raíz del proyecto (puedes partir del `.env.example
 | `JWT_SECRET` | Clave secreta para firmar los tokens JWT (HS256) | `miClaveSecretaMuyLarga` |
 | `JWT_EXPIRATION` | Tiempo de expiración del token en milisegundos | 84000 |
 
-> La URL de conexión queda como `jdbc:postgresql://localhost:5434/${DB_NAME}`. El puerto `5434` es el que expone el contenedor Docker definido en `docker-compose.yaml`.
+> La URL de conexión se resuelve como `jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5434}/${DB_NAME}`.
+> En local usa los valores por defecto; con Docker Compose se inyectan `DB_HOST=db` y `DB_PORT=5432` automáticamente.
 
 ### Instalación y ejecución
 
@@ -206,11 +209,14 @@ cd klinico-api
 cp .env.example .env
 # Edita .env y añade JWT_SECRET y JWT_EXPIRATION
 
-# 3. Levanta la base de datos con Docker
-docker-compose up -d
+# 3. Opción A — Stack completo con Docker (recomendado)
+docker compose up --build        # Construye la imagen y arranca BD + API
+docker compose up --build api    # Solo reconstruye la API tras cambios
+docker compose down              # Para y elimina los contenedores
 
-# 4. Ejecuta la aplicación con el Gradle Wrapper
-./gradlew bootRun
+# 3. Opción B — Desarrollo local (BD en Docker, API con Gradle)
+docker-compose up -d #Levanta la base de datos con Docker
+./gradlew bootRun #Ejecuta la aplicación con el Gradle Wrapper
 
 # Para generar el JAR ejecutable
 ./gradlew clean build
