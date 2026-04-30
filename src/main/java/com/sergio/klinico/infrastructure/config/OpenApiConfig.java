@@ -24,10 +24,10 @@ import org.springframework.context.annotation.Configuration;
                 version = "1.0.0",
                 description = "API REST para la gestión de ingresos hospitalarios, episodios clínicos, " +
                         "pacientes, usuarios y KPIs del servicio. Requiere autenticación JWT " +
-                        "en todos los endpoints excepto /api/v1/auth/login.",
+                        "en todos los endpoints excepto en /api/v1/auth/login.",
                 contact = @Contact(
-                        name = "Sergio",
-                        email = "sergio@klinico.com"
+                        name = "SM",
+                        email = "sergiolillom@gmail.com"
                 )
         ),
         servers = {
