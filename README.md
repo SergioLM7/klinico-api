@@ -1,118 +1,285 @@
 <a id="readme-top"></a>
-# Klinico 🏥 - API de Sistema de Gestión Clínica Hospitalaria
 
-Klinico es una plataforma integral para la gestión de pacientes, admisiones y episodios clínicos, diseñada bajo estándares de alta disponibilidad y robustez técnica. 
-Este proyecto se centra en la digitalización del flujo de trabajo médico, desde el ingreso del paciente hasta su alta, así como en la automatización de KPIs de interés para jefes de servicio.
+<div align="center">
+  <h1>Klinico API — REST API de Gestión Clínica Hospitalaria</h1>
+  <p>Backend Spring Boot que alimenta la app móvil multiplataforma Klinico para el pase de planta hospitalario diario.</p>
 
-El objetivo principal de esta API es proveer las entidades, operaciones y lógica de negocio necesarias para facilitar el pase de planta diario de los médicos de un hospital. No obstante, se ha desarrollado sobre una Arquitectura Hexagonal (Domain Driven Development) para desacoplar el dominio del canal de entrada, de forma que el mismo núcleo funcional pueda ser consumido tanto por una aplicación multiplataforma, como por un cliente web o de escritorio.
+  ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-6DB33F?logo=springboot)
+  ![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk)
+  ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-336791?logo=postgresql)
+  ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
+  ![License](https://img.shields.io/badge/License-MIT-green)
+</div>
 
+---
 
-## 🚀 Características Principales
+## Tabla de contenidos
 
-- **Gestión de Pacientes:** Registro, seguimiento de estados (Alta, Ingresado, Exitus) y trazabilidad completa.
-- **Ciclo de Admisiones:** Control de ingresos por servicio, flujo y rol para asignación de habitaciones, y cálculo automático de estancia media (KPI).
-- **Episodios Clínicos:** Evolución diaria documentada con escalas validadas (Braden, CHADS2, CAM) y con seguridad para evitar modificación de datos por cualquier otro usuario que no haya creado el episodio clínico.
+- [Descripción](#descripción)
+- [Funcionalidades / Endpoints](#funcionalidades--endpoints)
+- [Arquitectura](#arquitectura)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Stack tecnológico](#stack-tecnológico)
+- [Primeros pasos](#primeros-pasos)
+  - [Prerrequisitos](#prerrequisitos)
+  - [Variables de entorno](#variables-de-entorno)
+  - [Instalación y ejecución](#instalación-y-ejecución)
+- [Documentación API](#documentación-api)
+- [Repositorio del frontend](#repositorio-del-frontend)
+- [Contacto](#contacto)
+- [License](#license)
+
+---
+
+## Descripción
+
+**Klinico API** es el backend REST de la plataforma de gestión clínica hospitalaria **Klinico**. Expone los endpoints que consume la aplicación móvil Flutter [klinico_front](https://github.com/SergioLM7/klinico-front), proporcionando la lógica de negocio para gestionar pacientes, admisiones y episodios clínicos diarios.
+
+La API está diseñada bajo **Arquitectura Hexagonal (Ports & Adapters)** con principios de **Domain-Driven Design (DDD)**, de forma que el núcleo de dominio permanece completamente desacoplado de la capa de infraestructura. Esto permite que el mismo núcleo funcional pueda ser consumido tanto por la app móvil actual como por cualquier otro cliente futuro (web, escritorio).
+
+La autenticación se basa en **JWT (Bearer Token)** y el control de acceso se gestiona mediante roles (`MEDICO`, `JEFESERVICIO`, `ADMINISTRATIVO`, `SYSADMIN`). La trazabilidad de cambios en las entidades críticas se garantiza mediante **Hibernate Envers**.
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+---
+
+## Funcionalidades principales
+
+- **Gestión de pacientes:** Registro, seguimiento de estados (Alta, Ingresado, Exitus), edición.
+- **Ciclo de Admisiones:** Creación, edición, control de ingresos por servicio, flujo de asignación de habitación, flujo para dar de alta al paciente.
+- **Episodios Clínicos:** Evolución diaria documentada con escalas médicas (Braden, CHADS2, CAM) y con seguridad para evitar modificación de datos por cualquier otro usuario que no haya creado el episodio clínico.
 - **Seguridad y auditoría:** Autenticación basada en JWT, seguridad por roles (Médico, Jefe de Servicio, Administrativo, Sys Admin) y auditoría automática de campos (`createdBy`, `createdAt`. `modifiedBy`, `modifiedAt`) junto a Hibernate Envers para dejar constancia de las diferentes modificaciones de las entidades de máxima relevancia.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 🏗️ Arquitectura: Hexagonal (Ports & Adapters)
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-El proyecto implementa una **Arquitectura Hexagonal** para garantizar el desacoplamiento entre la lógica de negocio y las tecnologías externas:
+---
 
-- **Domain Layer:** Contiene modelos de dominio ricos --siguiendo los principios de DDD (Domain-Driven Design) para asegurar que las reglas de negocio estén centralizadas y protegidas dentro de las propias entidades (`Patient`, `Admission`, `Episode`, `User`)--, las interfaces de repositorio y las reglas de integridad.
-- **Application Layer:** Servicios que orquestan cada uno de los casos de uso.
-- **Infrastructure Layer:**
-  - **Persistence:** Adaptadores JPA para PostgreSQL con MapStruct; Entities y JpaRepositories.
-  - **Security:** Filtros JWT y configuración de Spring Security.
-  - **Rest:** Controladores REST con limitación de acceso por roles.
+## Arquitectura
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+El proyecto implementa una **Arquitectura Hexagonal (Ports & Adapters)** con las siguientes capas:
 
-## 🛠️ Stack Tecnológico
+```mermaid
+flowchart TB
 
-- **Backend:** Java 25, Spring Boot 4, Spring Data JPA, JUnit 6, Mockito.
-- **Seguridad:** Spring Security + JWT (JSON Web Tokens)
-- **Base de Datos:** PostgreSQL 17
-- **Mapeo de Objetos y utils:** MapStruct, Lombok
-- **Documentación:** JavaDocs, OpenAPI
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+ subgraph Comm["COMUNICACIÓN"]
+        JSON["<b>REST API</b><br>JSON + JWT Header"]
+  end
+
+ subgraph Backend["SERVIDOR (Spring Boot)"]
+    direction TB
+        SEC["<b>Security Filters</b><br>(JWT Filter + SecurityConfig)"]
+        BC["<b>Controladores</b><br>(@PreAuthorize + @Validated)"]
+        DTOBack["<b>DTOs + Mappers</b><br>(Request/Response + MapStruct)"]
+        EH["<b>Exception Handler</b><br>(@RestControllerAdvice)"]
+        BS["<b>Aplicación</b><br>(Servicios + Casos de Uso)"]
+        BD["<b>Dominio</b><br>(Modelos Ricos + Puertos + Excepciones)"]
+        BA["<b>Adaptadores</b><br>(Persistence Adapters)"]
+        AUD["<b>Auditoría</b><br>(Spring Auditing + Envers)"]
+        BI["<b>Repositorios JPA</b><br>(Spring Data + Entities)"]
+        DB[("<b>PostgreSQL</b><br>(Tablas Envers _aud)")]
+  end
+
+
+    JSON == Request ==> BC
+    EH -. ErrorResponse .-> JSON
+    BC -. Response JSON .-> JSON
+    
+    SEC --> BC
+    BC --> DTOBack
+    BC -. Errores .-> EH
+    DTOBack --> BS
+    BS --> BD
+    BD -. Puertos .-> BA
+    BA --> BI
+    BI -. Persistencia .-> DB
+    DB -.-> BI
+    AUD -. Transversal .-> BI
+
+  
+   style SEC fill:#ffe0e0
+    style BC fill:#fff
+    style DTOBack fill:#e8f5e9
+    style EH fill:#fce4ec
+    style AUD fill:#f3e5f5
+    style Backend fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Comm fill:#f5f5f5,stroke:#333,stroke-dasharray: 5 5
+    style DB fill:#e3f2fd
+```
+
+**Responsabilidades por capa:**
+
+- **Dominio:** Modelos de dominio ricos (reglas de negocio encapsuladas en las propias entidades) e interfaces de repositorio (puertos de salida). No depende de ninguna tecnología externa.
+- **Aplicación:** Servicios y casos de uso que orquestan la lógica de negocio coordinando modelos de dominio y puertos.
+- **Infraestructura — REST:** Controladores `@RestController` que reciben las peticiones HTTP, aplican validación de entrada y delegan en los servicios de aplicación.
+- **Infraestructura — Persistencia:** Adaptadores JPA que implementan los puertos de repositorio del dominio. Usan entidades `@Entity` mapeadas con MapStruct hacia/desde los modelos de dominio.
+- **Infraestructura — Seguridad:** Filtro JWT que intercepta cada petición, valida el token y establece el contexto de seguridad de Spring.
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+---
 
 ## Estructura del proyecto
+
 ```text
-com.sergio.klinico
-├── application
-│   └── services          # Lógica de orquestación y casos de uso
-├── domain
-│   ├── exceptions        # Excepciones de negocio (BusinessException)
-│   ├── models            # Entidades puras de dominio
-│   └── repositories      # Puertos de salida (Interfaces)
-└── infrastructure
-    ├── config            # Configuraciones generales de Spring Security
-    ├── mappers           # Mapeos de MapStruct (Domain <-> Entity <-> DTO)
-    ├── persistence       # Adaptadores de persistencia y JPA
-    │   ├── adapters      # Implementación de los repositorios de dominio (Adapters)
-    │   ├── configuration # Configuración específica de Auditoría (AuditorAware)
-    │   ├── repositories  # Interfaces JpaRepository (Spring Data)
-    │   └── entities      # Entidades JPA (@Entity) y AuditableEntity
-    ├── rest              # Adaptadores de entrada (API REST)
-    │   ├── advice        # GlobalExceptionHandler para gestión de errores
-    │   ├── controllers   # Endpoints de la API
-    │   └── dto           # Objetos de transferencia de datos
-    │       ├── requests  # Payloads de entrada
-    │       ├── responses # Estructura de salida (Admission, Episode, Patient, Login, Error)
-    │       └── validations # Grupos de validación
-    └── security          # Infraestructura de seguridad
-        ├── filters       # Filtro de autenticación JWT
-        └── services      # Gestión, validación y extracciones del Token
+src/
+└── main/
+    ├── java/com/sergio/klinico/
+    │   ├── KlinicoApiApplication.java
+    │   ├── domain/
+    │   │   ├── models/               # Modelos de dominio ricos (Patient, Admission, Episode, User, Service)
+    │   │   │                         #   + enums PatientStatus, UserRole
+    │   │   ├── repositories/         # Interfaces de puerto — contratos de persistencia
+    │   │   └── exceptions/           # AuthException, BusinessException, CustomException
+    │   ├── application/
+    │   │   └── services/             # Casos de uso y servicios de aplicación
+    │   │                             #   AdmissionService, PatientService, EpisodeService,
+    │   │                             #   UserService, KpiService, AuditService,
+    │   │                             #   LoginUseCase, FindUserByIdUseCase, ...
+    │   └── infrastructure/
+    │       ├── config/               # SecurityConfig, JwtAuthenticationEntryPoint
+    │       ├── mappers/              # Mappers MapStruct (dominio ↔ entidad JPA / DTO)
+    │       ├── persistence/          # Entidades @Entity, adaptadores JPA, JpaRepositories,
+    │       │                         #   proyecciones, JpaConfig, AuditableEntity
+    │       ├── rest/                 # Controladores @RestController, DTOs (Request/Response),
+    │       │                         #   validaciones personalizadas, GlobalExceptionHandler
+    │       └── security/             # JwtService (JJWT), JwtAuthenticationFilter
+    └── resources/
+        └── application.yaml         # Configuración de datasource, JPA, Hibernate Envers, logging
 ```
 
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-## 🛠️ Instalación y Configuración en Local
-- 1. Requisitos Previos
+---
 
-Java 25 JDK o superior.
+## Stack tecnológico
 
-Gradle 9 (o usar el gradle-wrapper.jar)
+| Categoría | Tecnología |
+|-----------|-----------|
+| Framework | Spring Boot `4.0.3` |
+| Lenguaje | Java 25 |
+| Build tool | Gradle (Gradle Wrapper incluido) |
+| Seguridad | Spring Security + JJWT `0.12.6` |
+| Persistencia | Spring Data JPA / Hibernate |
+| Auditoría | Hibernate Envers |
+| Base de datos | PostgreSQL `17` |
+| Mapeo de objetos | MapStruct `1.6.3` |
+| Utilidades | Lombok |
+| Validación | Spring Validation (Bean Validation) |
+| Contenedores | Docker + Docker Compose |
+| Testing | Spring Boot Test (JUnit 6) |
+| Documentación API | springdoc-openapi `3.0.3` (Swagger UI + OpenAPI 3) |
 
-Docker y Docker Compose (para la base de datos).
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-- 2. Clona el repo
-   ```sh
-   git clone https://github.com/SergioLM7/klinico-api/
-   ```
+---
 
-- 3. Despliegue de la Base de Datos (Docker)
+## Primeros pasos
 
-He incluido un archivo docker-compose.yml en la raíz para levantar PostgreSQL con un solo comando. Este contenedor ya incluye la persistencia de datos.
+### Prerrequisitos
 
-Comando para arrancar: 
- ```sh
- docker-compose up -d
+- [JDK 25](https://jdk.java.net/25/) o superior.
+- [Docker](https://www.docker.com/) y Docker Compose (para levantar PostgreSQL o PostgreSQL + API con un solo comando).
+- Gradle no es necesario instalarlo globalmente; el proyecto incluye el **Gradle Wrapper** (`./gradlew`).
+
+### Variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto (puedes partir del `.env.example` incluido) con las siguientes variables:
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `DB_USER` | Usuario de PostgreSQL | `admin` |
+| `DB_PASSWORD` | Contraseña de PostgreSQL | `password` |
+| `DB_NAME` | Nombre de la base de datos | `klinico` |
+| `JWT_SECRET` | Clave secreta para firmar los tokens JWT (HS256) | `miClaveSecretaMuyLarga` |
+| `JWT_EXPIRATION` | Tiempo de expiración del token en milisegundos | 84000 |
+
+> La URL de conexión se resuelve como `jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5434}/${DB_NAME}`.
+> En local usa los valores por defecto; con Docker Compose se inyectan `DB_HOST=db` y `DB_PORT=5432` automáticamente.
+
+### Instalación y ejecución
+
+```bash
+# 1. Clona el repositorio
+git clone https://github.com/SergioLM7/klinico-api
+cd klinico-api
+
+# 2. Configura las variables de entorno
+cp .env.example .env
+# Edita .env y añade JWT_SECRET y JWT_EXPIRATION
+
+# 3. Opción A — Stack completo con Docker (recomendado)
+docker compose up --build        # Construye la imagen y arranca BD + API
+docker compose up --build api    # Solo reconstruye la API tras cambios
+docker compose down              # Para y elimina los contenedores
+
+# 3. Opción B — Desarrollo local (BD en Docker, API con Gradle)
+docker-compose up -d #Levanta la base de datos con Docker
+./gradlew bootRun #Ejecuta la aplicación con el Gradle Wrapper
+
+# Para generar el JAR ejecutable
+./gradlew clean build
+java -jar build/libs/klinico-api-0.0.1-SNAPSHOT.jar
 ```
- 
-- 4. Configuración de variables de entorno
 
-Crea un archivo .env con tus variables de entorno. Se deja el .env.example de ejemplo.
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-- 5. Ejecución
-     
-```sh
-gradle bootRun
+---
+
+## Documentación API
+
+El proyecto ofrece dos niveles de documentación para la API:
+
+### Swagger UI / OpenAPI 3 (endpoints REST)
+
+Disponible en tiempo de ejecución. Arranca la aplicación y accede a:
+
+| Recurso | URL |
+|---------|-----|
+| Interfaz interactiva (Swagger UI) | `http://localhost:8080/swagger-ui/index.html` |
+| Especificación JSON (OpenAPI 3) | `http://localhost:8080/v3/api-docs` |
+
+La UI permite explorar todos los endpoints agrupados por dominio, ver sus parámetros y respuestas, y ejecutar peticiones directamente desde el navegador. Para los endpoints protegidos haz clic en **Authorize** e introduce el token JWT con el formato `Bearer <token>`.
+
+### Javadoc (código fuente)
+
+Cubre los servicios de aplicación, casos de uso, adaptadores de persistencia y controladores REST.
+
+```bash
+# Genera la documentación Javadoc
+./gradlew javadoc
+
+# Abre la página principal en tu navegador
+open build/docs/javadoc/index.html   # macOS
+xdg-open build/docs/javadoc/index.html  # Linux
+start build/docs/javadoc/index.html  # Windows
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+El HTML generado queda en `build/docs/javadoc/`.
 
-## 📘 Documentación
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
 
-- API:
-- JavaDocs: 
+---
+
+## Repositorio del frontend
+
+La aplicación móvil Flutter que consume esta API está disponible en:
+
+**[https://github.com/SergioLM7/klinico-front](https://github.com/SergioLM7/klinico-front)**
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+---
 
 ## 👨🏽‍💻 Contacto
 
 **Sergio Lillo, Full Stack Software Developer**
-<a href="https://www.linkedin.com/in/lillosergio/" target="_blank"> <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/LinkedIn_icon.svg/1200px-LinkedIn_icon.svg.png" width=30px, height=30px/></a> - sergiolillom@gmail.com
+<a href="https://www.linkedin.com/in/lillosergio/" target="_blank"><img src="https://github.com/devicons/devicon/blob/master/icons/linkedin/linkedin-original.svg" title="LinkedIn" alt="LinkedIn" width="20" height="20"/></a> - sergiolillom@gmail.com
+
+<p align="right">(<a href="#readme-top">volver arriba</a>)</p>
+
+---
 
 ## © MIT License
 

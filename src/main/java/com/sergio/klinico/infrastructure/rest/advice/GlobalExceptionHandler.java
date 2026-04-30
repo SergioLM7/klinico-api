@@ -1,0 +1,155 @@
+package com.sergio.klinico.infrastructure.rest.advice;
+
+import com.sergio.klinico.domain.exceptions.AuthException;
+import com.sergio.klinico.domain.exceptions.BusinessException;
+import com.sergio.klinico.infrastructure.rest.dto.responses.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+        @ExceptionHandler(AuthException.class)
+        public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(ex.getMessage())
+                                .status(HttpStatus.UNAUTHORIZED.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.warn("Error de autenticación {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        // Captura errores de lógica (DNI repetido, etc.)
+        @ExceptionHandler(BusinessException.class)
+        public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(ex.getMessage())
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.warn("Error de lógica de negocio {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        // Captura errores de validación de los @NotBlank, @Pattern, @Past...
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,
+                        HttpServletRequest request) {
+                // Concatenamos todos los errores de validación en un solo mensaje
+                String errorMessage = ex.getBindingResult()
+                                .getFieldErrors()
+                                .stream()
+                                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                                .collect(Collectors.joining(", "));
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("Error de validación: " + errorMessage)
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.warn("Error de validación {}: {}", request.getRequestURI(), errorMessage);
+
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        // Captura cuando el @PreAuthorize falla (Rol incorrecto)
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
+                        HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("No tienes permisos suficientes para realizar esta acción")
+                                .status(HttpStatus.FORBIDDEN.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.warn("Error de acceso denegado {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+        }
+
+        // Captura cuando el request body está vacío o mal formado
+        @ExceptionHandler(HttpMessageNotReadableException.class)
+        public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex,
+                        HttpServletRequest request) {
+                String message = "El cuerpo de la solicitud es requerido y debe estar en formato JSON válido";
+
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(message)
+                                .status(HttpStatus.BAD_REQUEST.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.warn("Error de lectura del cuerpo de la solicitud {}: {}", request.getRequestURI(),
+                                ex.getMessage());
+
+                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        // Captura cuando un registro que se intenta modificar ya ha sido modificado por
+        // otro usuario y ha cambiado su estado
+        @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+        public ResponseEntity<ErrorResponse> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("El registro fue actualizado por otro usuario. Por favor, recarga los datos e inténtalo de nuevo.")
+                                .status(HttpStatus.CONFLICT.value())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+
+                log.warn("Conflicto de concurrencia: El recurso de tipo {} con ID {} ya había sido modificado",
+                                ex.getPersistentClassName(), ex.getIdentifier());
+
+                return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        }
+
+        @ExceptionHandler(DataAccessException.class)
+        public ResponseEntity<ErrorResponse> handleDataAccessException(DataAccessException ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message("El servicio no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde.")
+                                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.error("Error de acceso a la base de datos en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
+                ErrorResponse error = ErrorResponse.builder()
+                                .message(ex.getMessage())
+                                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .timestamp(LocalDateTime.now())
+                                .path(request.getRequestURI())
+                                .build();
+
+                log.error("Error no controlado en {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
+                return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+}

@@ -1,3 +1,37 @@
 spring:
   application:
     name: klinico-api
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5434}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      initialization-fail-timeout: -1 # No fallar al arrancar si la BBDD no está disponible
+      connection-timeout: 10000 # Fallar rápido (10s) para responder antes de que el cliente agote su timeout
+  jpa:
+    hibernate:
+      ddl-auto: none # La validación requiere conexión activa; en producción usar Flyway/Liquibase
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        # Configuración de Hibernate Envers
+        envers:
+          audit_table_suffix: _aud
+          revision_field_name: rev
+          revision_type_field_name: revtype
+          store_data_at_delete: true
+          default_catalog: public
+          default_schema: public
+  config:
+    import: "optional:file:.env[.properties]"
+server:
+  forward-headers-strategy: native
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL=DEBUG:
