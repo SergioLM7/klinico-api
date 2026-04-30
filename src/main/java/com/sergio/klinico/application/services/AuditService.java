@@ -22,6 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Servicio de aplicación para la consulta del historial de auditoría generado
+ * por Hibernate Envers.
+ *
+ * <p>Proporciona acceso al registro de revisiones (INSERT / UPDATE / DELETE) de las
+ * entidades auditadas {@code AdmissionEntity} y {@code EpisodeEntity}. Las revisiones
+ * se almacenan en tablas sufijadas con {@code _aud} y se ordenan por número de revisión
+ * ascendente (más antiguas primero).</p>
+ *
+ * <p>Todas las operaciones son de solo lectura y requieren un {@link EntityManager} activo
+ * para que {@link org.hibernate.envers.AuditReaderFactory} pueda acceder al contexto
+ * de persistencia.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -31,6 +44,12 @@ public class AuditService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Devuelve el historial completo de revisiones de un ingreso concreto.
+     *
+     * @param admissionId UUID del ingreso cuyas revisiones se consultan
+     * @return lista ordenada de revisiones del ingreso, vacía si no hay historial
+     */
     public List<RevisionResponse.AdmissionRevisionResponse> getAdmissionRevisions(UUID admissionId) {
         log.info("Obteniendo historial de revisiones para admissionId: {}", admissionId);
 
@@ -90,6 +109,12 @@ public class AuditService {
         return responseList;
     }
 
+    /**
+     * Devuelve el historial completo de revisiones de un episodio clínico concreto.
+     *
+     * @param episodeId UUID del episodio cuyas revisiones se consultan
+     * @return lista ordenada de revisiones del episodio, vacía si no hay historial
+     */
     public List<RevisionResponse.EpisodeRevisionResponse> getEpisodeRevisions(UUID episodeId) {
         log.info("Obteniendo historial de revisiones para episodeId: {}", episodeId);
 
@@ -145,6 +170,15 @@ public class AuditService {
         return responseList;
     }
 
+    /**
+     * Devuelve todas las revisiones de ingresos realizadas por un usuario concreto.
+     *
+     * <p>Filtra in-memory las revisiones cuyo campo {@code createdBy} coincida con el
+     * {@code userId} indicado, ya que Envers no soporta filtrado nativo por campo de auditoría.</p>
+     *
+     * @param userId UUID del usuario cuyas revisiones de ingresos se consultan
+     * @return lista de revisiones de ingresos realizadas por ese usuario, vacía si no hay datos
+     */
     public List<RevisionResponse.AdmissionRevisionResponse> getAdmissionRevisionsByUser(UUID userId) {
         log.info("Obteniendo revisiones de admissions por userId: {}", userId);
 
@@ -184,6 +218,15 @@ public class AuditService {
         return responseList;
     }
 
+    /**
+     * Devuelve todas las revisiones de episodios clínicos realizadas por un usuario concreto.
+     *
+     * <p>Filtra in-memory las revisiones cuyo campo {@code createdBy} coincida con el
+     * {@code userId} indicado.</p>
+     *
+     * @param userId UUID del usuario cuyas revisiones de episodios se consultan
+     * @return lista de revisiones de episodios realizadas por ese usuario, vacía si no hay datos
+     */
     public List<RevisionResponse.EpisodeRevisionResponse> getEpisodeRevisionsByUser(UUID userId) {
         log.info("Obteniendo revisiones de episodes por userId: {}", userId);
 

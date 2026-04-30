@@ -15,6 +15,25 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Servicio de aplicación que calcula los indicadores clave de rendimiento (KPIs)
+ * del servicio hospitalario.
+ *
+ * <p>Agrega datos de ingresos y pacientes para producir series temporales mensuales
+ * utilizadas en los cuadros de mando del jefe de servicio. Cuando se solicita un año
+ * completo sin especificar mes, se rellenan los 12 meses garantizando que los meses
+ * sin datos devuelven el valor {@code 0.0}.</p>
+ *
+ * <p>KPIs disponibles:</p>
+ * <ul>
+ *   <li>Número de ingresos por servicio (mensual/anual)</li>
+ *   <li>Número de ingresos por médico del servicio (mensual/anual)</li>
+ *   <li>Número de éxitus del servicio (mensual/anual)</li>
+ *   <li>Estancia media en días del servicio (mensual/anual)</li>
+ *   <li>Estancia media en días por médico del servicio (mensual/anual)</li>
+ *   <li>Eficiencia global del servicio (estancia media histórica)</li>
+ * </ul>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,6 +43,15 @@ public class KpiService {
     private final AdmissionRepository admissionRepository;
     private final PatientRepository patientRepository;
 
+    /**
+     * Calcula el número de ingresos del servicio agrupados por mes.
+     *
+     * @param serviceId UUID del servicio hospitalario
+     * @param year      año de referencia
+     * @param month     mes de referencia (1-12), o {@code null} para devolver los 12 meses
+     * @return lista de entradas mensuales con el número de ingresos;
+     *         los meses sin datos devuelven valor {@code 0.0}
+     */
     public List<MonthlyKpiEntry> getAdmissionsByService(UUID serviceId, int year, Integer month) {
         log.info("KPI ingresos por servicio - serviceId: {}, year: {}, month: {}", serviceId, year, month);
         List<MonthlyKpiEntry> raw = month != null
@@ -32,6 +60,14 @@ public class KpiService {
         return fillMonths(raw, month);
     }
 
+    /**
+     * Calcula el número de ingresos por médico del servicio agrupados por mes.
+     *
+     * @param serviceId UUID del servicio hospitalario
+     * @param year      año de referencia
+     * @param month     mes de referencia (1-12), o {@code null} para devolver los 12 meses
+     * @return lista de series por médico, cada una con sus datos mensuales
+     */
     public List<DoctorKpiSeries> getAdmissionsByDoctor(UUID serviceId, int year, Integer month) {
         log.info("KPI ingresos por médico - serviceId: {}, year: {}, month: {}", serviceId, year, month);
         List<DoctorKpiSeries> raw = month != null
@@ -40,6 +76,17 @@ public class KpiService {
         return fillDoctorMonths(raw, month);
     }
 
+    /**
+     * Calcula el número de éxitus del servicio agrupados por mes.
+     *
+     * <p>Usa la fecha de modificación del paciente como referencia del éxitus.</p>
+     *
+     * @param serviceId UUID del servicio hospitalario
+     * @param year      año de referencia
+     * @param month     mes de referencia (1-12), o {@code null} para devolver los 12 meses
+     * @return lista de entradas mensuales con el número de éxitus;
+     *         los meses sin datos devuelven valor {@code 0.0}
+     */
     public List<MonthlyKpiEntry> getExitus(UUID serviceId, int year, Integer month) {
         log.info("KPI éxitus - serviceId: {}, year: {}, month: {}", serviceId, year, month);
         List<MonthlyKpiEntry> raw = month != null
@@ -48,6 +95,17 @@ public class KpiService {
         return fillMonths(raw, month);
     }
 
+    /**
+     * Calcula la estancia media en días del servicio agrupada por mes.
+     *
+     * <p>Solo se consideran ingresos con alta registrada ({@code dischargeDate} no nulo).</p>
+     *
+     * @param serviceId UUID del servicio hospitalario
+     * @param year      año de referencia
+     * @param month     mes de referencia (1-12), o {@code null} para devolver los 12 meses
+     * @return lista de entradas mensuales con la estancia media en días;
+     *         los meses sin datos devuelven valor {@code 0.0}
+     */
     public List<MonthlyKpiEntry> getAvgStayByService(UUID serviceId, int year, Integer month) {
         log.info("KPI estancia media por servicio - serviceId: {}, year: {}, month: {}", serviceId, year, month);
         List<MonthlyKpiEntry> raw = month != null
@@ -56,6 +114,16 @@ public class KpiService {
         return fillMonths(raw, month);
     }
 
+    /**
+     * Calcula la estancia media en días por médico del servicio agrupada por mes.
+     *
+     * <p>Solo se consideran ingresos con alta registrada ({@code dischargeDate} no nulo).</p>
+     *
+     * @param serviceId UUID del servicio hospitalario
+     * @param year      año de referencia
+     * @param month     mes de referencia (1-12), o {@code null} para devolver los 12 meses
+     * @return lista de series por médico, cada una con la estancia media mensual en días
+     */
     public List<DoctorKpiSeries> getAvgStayByDoctor(UUID serviceId, int year, Integer month) {
         log.info("KPI estancia media por médico - serviceId: {}, year: {}, month: {}", serviceId, year, month);
         List<DoctorKpiSeries> raw = month != null
@@ -64,7 +132,12 @@ public class KpiService {
         return fillDoctorMonths(raw, month);
     }
 
-
+    /**
+     * Calcula la eficiencia global del servicio como la estancia media histórica de todos sus ingresos.
+     *
+     * @param serviceId UUID del servicio hospitalario
+     * @return estancia media global en días, o {@code 0.0} si el servicio no tiene ingresos con alta
+     */
     public Double getServiceEfficiencyKPI(UUID serviceId) {
         log.info("Calculando estancia media para el servicio: {}", serviceId);
 
@@ -75,8 +148,14 @@ public class KpiService {
     }
 
     /**
-     * Rellena con valor 0.0 los meses sin datos.
-     * En modo año devuelve los 12 meses; en modo mes devuelve ese único mes (0.0 si no hay datos).
+     * Rellena con valor {@code 0.0} los meses sin datos en una serie mensual.
+     *
+     * <p>En modo año completo devuelve los 12 meses; en modo mes individual
+     * devuelve ese único mes con {@code 0.0} si no hay datos.</p>
+     *
+     * @param data  lista de entradas mensuales obtenidas de BD (pueden ser menos de 12)
+     * @param month mes de referencia, o {@code null} si se solicita el año completo
+     * @return lista completa de entradas mensuales con los huecos rellenos a {@code 0.0}
      */
     private List<MonthlyKpiEntry> fillMonths(List<MonthlyKpiEntry> data, Integer month) {
         if (month != null) {
@@ -89,6 +168,13 @@ public class KpiService {
                 .toList();
     }
 
+    /**
+     * Aplica {@link #fillMonths} a cada médico de una lista de series por doctor.
+     *
+     * @param doctors lista de series por médico con datos crudos de BD
+     * @param month   mes de referencia, o {@code null} si se solicita el año completo
+     * @return lista de series por médico con los meses rellenos a {@code 0.0}
+     */
     private List<DoctorKpiSeries> fillDoctorMonths(List<DoctorKpiSeries> doctors, Integer month) {
         return doctors.stream()
                 .map(d -> new DoctorKpiSeries(

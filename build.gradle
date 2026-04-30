@@ -51,6 +51,9 @@ dependencies {
 	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
+	// OpenAPI / Swagger UI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+
 	//Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
