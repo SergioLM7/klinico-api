@@ -1,6 +1,7 @@
 <a id="readme-top"></a>
 
 <div align="center">
+  <img src="docs/assets/logo_transparent.png" alt="Klinico Logo" width="120" />
   <h1>Klinico API — REST API de Gestión Clínica Hospitalaria</h1>
   <p>Backend Spring Boot que alimenta la app móvil multiplataforma Klinico para el pase de planta hospitalario diario.</p>
 
