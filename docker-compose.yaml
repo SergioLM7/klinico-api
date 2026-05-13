@@ -5,6 +5,7 @@ services:
     container_name: klinico_db
     restart: always
     environment:
+      TZ: Europe/Madrid
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
@@ -21,6 +22,7 @@ services:
     container_name: klinico_api
     restart: always
     environment:
+      TZ: Europe/Madrid
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ${DB_USER}
