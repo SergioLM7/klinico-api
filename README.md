@@ -17,7 +17,7 @@
 ## Tabla de contenidos
 
 - [Descripción](#descripción)
-- [Funcionalidades / Endpoints](#funcionalidades--endpoints)
+- [Funcionalidades / Endpoints](#funcionalidades-principales)
 - [Arquitectura](#arquitectura)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Stack tecnológico](#stack-tecnológico)
@@ -28,7 +28,7 @@
 - [Documentación API](#documentación-api)
 - [Repositorio del frontend](#repositorio-del-frontend)
 - [Contacto](#contacto)
-- [License](#license)
+- [Licencia](#conditional-mit-license-non-commercial-use-only)
 
 ---
 
@@ -273,7 +273,7 @@ La aplicación móvil Flutter que consume esta API está disponible en:
 
 ---
 
-## 👨🏽‍💻 Contacto
+## Contacto
 
 **Sergio Lillo, Full Stack Software Developer**
 <a href="https://www.linkedin.com/in/lillosergio/" target="_blank"><img src="https://github.com/devicons/devicon/blob/master/icons/linkedin/linkedin-original.svg" title="LinkedIn" alt="LinkedIn" width="20" height="20"/></a> - sergiolillom@gmail.com
@@ -282,7 +282,7 @@ La aplicación móvil Flutter que consume esta API está disponible en:
 
 ---
 
-## © CONDITIONAL MIT LICENSE (NON-COMMERCIAL USE ONLY)
+## CONDITIONAL MIT LICENSE (NON-COMMERCIAL USE ONLY)
 
 Copyright (©) 2026, Sergio Lillo
 
